@@ -7,12 +7,12 @@ import TopCard from './TopCard';
 import { Media } from '@/types/tmdb';
 
 interface CarouselProps {
-  title: string;
+  title?: string;
   items: Media[];
   cardType?: 'poster' | 'top';
 }
 
-export default function Carousel({ title, items, cardType = 'poster' }: CarouselProps) {
+export default function Carousel({ title = '', items, cardType = 'poster' }: CarouselProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const scroll = (direction: 'left' | 'right') => {

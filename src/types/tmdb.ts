@@ -14,6 +14,7 @@ export interface MediaItem {
   popularity: number;
   genre_ids: number[];
   media_type?: 'movie' | 'tv' | 'person';
+  [key: string]: any;
 }
 
 export interface Movie extends MediaItem {
@@ -29,6 +30,8 @@ export interface TVShow extends MediaItem {
   first_air_date: string;
   media_type?: 'tv';
 }
+
+export type Media = Movie | TVShow | MediaItem | any;
 
 export interface Video {
   id: string;
