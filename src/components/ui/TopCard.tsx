@@ -3,10 +3,10 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Media } from '@/types/tmdb';
+import { MediaItem, Movie, TVShow } from '@/types/tmdb';
 
 interface TopCardProps {
-  media: Media;
+  media: Movie | TVShow | MediaItem | any;
   index: number;
 }
 

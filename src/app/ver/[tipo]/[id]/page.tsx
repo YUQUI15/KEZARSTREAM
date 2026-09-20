@@ -60,7 +60,7 @@ export default async function WatchPage({ params, searchParams }: PageProps) {
     notFound();
   }
 
-  const title = details.title || details.name;
+  const title = (details as any).title || (details as any).name;
 
   return (
     <main className="min-h-screen bg-[#000814] text-white pt-24 pb-16 font-['Lexend_Deca']">
@@ -81,9 +81,9 @@ export default async function WatchPage({ params, searchParams }: PageProps) {
           <h1 className="text-3xl md:text-5xl font-bold mb-4">{title}</h1>
           
           <div className="flex flex-wrap items-center gap-4 text-sm text-gray-400 mb-6">
-            {details.release_date || details.first_air_date ? (
+            {(details as any).release_date || (details as any).first_air_date ? (
               <span className="bg-gray-800 px-3 py-1 rounded-md text-white">
-                {(details.release_date || details.first_air_date).substring(0, 4)}
+                {((details as any).release_date || (details as any).first_air_date).substring(0, 4)}
               </span>
             ) : null}
             
@@ -114,11 +114,11 @@ export default async function WatchPage({ params, searchParams }: PageProps) {
         </div>
 
         {/* Series Seasons & Episodes */}
-        {mediaType === 'tv' && details.seasons && (
+        {mediaType === 'tv' && (details as any).seasons && (
           <div className="mb-16 border-t border-gray-800 pt-8">
             <SeasonSelector
               tvId={id}
-              seasons={details.seasons.filter((s: { season_number: number }) => s.season_number > 0)}
+              seasons={(details as any).seasons.filter((s: { season_number: number }) => s.season_number > 0)}
               currentSeason={season}
               currentEpisode={episode}
             />
