@@ -1,5 +1,5 @@
 import { searchMulti } from '@/lib/tmdb';
-import MovieCard from '@/components/MovieCard';
+import MovieCard from '@/components/ui/MovieCard';
 
 export default async function SearchPage({
   searchParams,

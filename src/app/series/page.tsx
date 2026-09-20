@@ -1,6 +1,6 @@
 import { getTvShows } from '@/lib/tmdb';
-import HeroSlider from '@/components/HeroSlider';
-import Carousel from '@/components/Carousel';
+import HeroSlider from '@/components/ui/HeroSlider';
+import Carousel from '@/components/ui/Carousel';
 
 export default async function SeriesPage() {
   const [popular, topRated, onTheAir] = await Promise.all([
