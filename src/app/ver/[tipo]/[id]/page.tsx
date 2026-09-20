@@ -99,7 +99,7 @@ export default async function WatchPage({ params, searchParams }: PageProps) {
 
             {details.genres && details.genres.length > 0 && (
               <div className="flex gap-2 flex-wrap">
-                {details.genres.map((g: any) => (
+                {details.genres.map((g: { id: number, name: string }) => (
                   <span key={g.id} className="text-gray-400 border border-gray-700 px-3 py-1 rounded-full text-xs">
                     {g.name}
                   </span>
@@ -118,7 +118,7 @@ export default async function WatchPage({ params, searchParams }: PageProps) {
           <div className="mb-16 border-t border-gray-800 pt-8">
             <SeasonSelector
               tvId={id}
-              seasons={details.seasons.filter((s: any) => s.season_number > 0)}
+              seasons={details.seasons.filter((s: { season_number: number }) => s.season_number > 0)}
               currentSeason={season}
               currentEpisode={episode}
             />
