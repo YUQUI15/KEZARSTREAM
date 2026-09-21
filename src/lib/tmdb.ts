@@ -1,7 +1,7 @@
 import { TMDBResponse, Movie, TVShow, DetailedMovie, DetailedTVShow, Season, MediaItem } from '@/types/tmdb';
 
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
-const API_KEY = process.env.TMDB_API_KEY;
+const API_KEY = process.env.TMDB_API_KEY || '982fb6b40e028e8fdd07a9116b40bcd6';
 
 type FetchOptions = {
   endpoint: string;
@@ -11,29 +11,33 @@ type FetchOptions = {
 
 async function fetchTMDB<T>({ endpoint, params = {}, revalidate = 3600 }: FetchOptions): Promise<T> {
   const url = new URL(`${TMDB_BASE_URL}${endpoint}`);
-  url.searchParams.append('api_key', API_KEY || '');
+  url.searchParams.append('api_key', API_KEY);
   url.searchParams.append('language', 'es-MX');
   
   Object.entries(params).forEach(([key, value]) => {
     url.searchParams.append(key, value);
   });
 
-  const response = await fetch(url.toString(), {
-    next: { revalidate },
-  });
+  try {
+    const response = await fetch(url.toString(), {
+      next: { revalidate },
+    });
 
-  if (!response.ok) {
-    console.error(`TMDB API Error: ${response.statusText} at ${endpoint}`);
-    // fallback empty response instead of failing the build
+    if (!response.ok) {
+      console.error(`TMDB API Error: ${response.status} ${response.statusText} at ${endpoint}`);
+      return { results: [] } as unknown as T;
+    }
+
+    return await response.json();
+  } catch (err) {
+    console.error(`TMDB fetch failure at ${endpoint}:`, err);
     return { results: [] } as unknown as T;
   }
-
-  return response.json();
 }
 
 export async function getTrendingDay(): Promise<(Movie | TVShow)[]> {
   const data = await fetchTMDB<TMDBResponse<MediaItem>>({ endpoint: '/trending/all/day' });
-  return data.results as (Movie | TVShow)[];
+  return (data.results || []) as (Movie | TVShow)[];
 }
 
 export async function getNowPlayingMovies(page = 1): Promise<TMDBResponse<Movie>> {
@@ -46,35 +50,88 @@ export async function getPopularTV(page = 1): Promise<TMDBResponse<TVShow>> {
 
 export async function getTrending(type = 'all', time = 'day') {
   const data = await fetchTMDB<TMDBResponse<MediaItem>>({ endpoint: `/trending/${type}/${time}` });
-  return data.results;
+  return data.results || [];
 }
 
 export async function getMovies(category = 'now_playing', page = 1) {
   const data = await fetchTMDB<TMDBResponse<Movie>>({ endpoint: `/movie/${category}`, params: { page: page.toString() } });
-  return data.results;
+  return data.results || [];
 }
 
 export async function getTvShows(category = 'popular', page = 1) {
   const data = await fetchTMDB<TMDBResponse<TVShow>>({ endpoint: `/tv/${category}`, params: { page: page.toString() } });
-  return data.results;
+  return data.results || [];
+}
+
+export async function getMoviesByGenre(genreId: number, page = 1) {
+  const data = await fetchTMDB<TMDBResponse<Movie>>({
+    endpoint: '/discover/movie',
+    params: {
+      with_genres: genreId.toString(),
+      sort_by: 'popularity.desc',
+      page: page.toString(),
+      include_adult: 'false',
+    },
+  });
+  return data.results || [];
+}
+
+export async function getTvByGenre(genreId: number, page = 1) {
+  const data = await fetchTMDB<TMDBResponse<TVShow>>({
+    endpoint: '/discover/tv',
+    params: {
+      with_genres: genreId.toString(),
+      sort_by: 'popularity.desc',
+      page: page.toString(),
+      include_adult: 'false',
+    },
+  });
+  return data.results || [];
+}
+
+export async function getKoreanMovies(page = 1) {
+  const data = await fetchTMDB<TMDBResponse<Movie>>({
+    endpoint: '/discover/movie',
+    params: {
+      with_original_language: 'ko',
+      sort_by: 'popularity.desc',
+      page: page.toString(),
+      include_adult: 'false',
+    },
+  });
+  return data.results || [];
+}
+
+export async function getNetflixSeries(page = 1) {
+  const data = await fetchTMDB<TMDBResponse<TVShow>>({
+    endpoint: '/discover/tv',
+    params: {
+      with_networks: '213', // Netflix Network ID on TMDB
+      sort_by: 'popularity.desc',
+      page: page.toString(),
+      include_adult: 'false',
+    },
+  });
+  return data.results || [];
 }
 
 export async function searchMulti(query: string) {
-  if (!query) return [];
+  if (!query || query.trim().length < 2) return [];
   const data = await fetchTMDB<TMDBResponse<MediaItem>>({
     endpoint: '/search/multi',
-    params: { query, include_adult: 'false' },
+    params: { query: query.trim(), include_adult: 'false' },
     revalidate: 60,
   });
-  return data.results;
+  return (data.results || []).filter((item) => item.media_type === 'movie' || item.media_type === 'tv');
 }
 
 export async function getMovieDetails(id: string): Promise<DetailedMovie | null> {
   try {
-    return await fetchTMDB<DetailedMovie>({
+    const data = await fetchTMDB<DetailedMovie>({
       endpoint: `/movie/${id}`,
       params: { append_to_response: 'credits,videos,similar' },
     });
+    return data && data.id ? data : null;
   } catch {
     return null;
   }
@@ -82,10 +139,11 @@ export async function getMovieDetails(id: string): Promise<DetailedMovie | null>
 
 export async function getTVDetails(id: string): Promise<DetailedTVShow | null> {
   try {
-    return await fetchTMDB<DetailedTVShow>({
+    const data = await fetchTMDB<DetailedTVShow>({
       endpoint: `/tv/${id}`,
       params: { append_to_response: 'credits,videos,similar' },
     });
+    return data && data.id ? data : null;
   } catch {
     return null;
   }
@@ -100,15 +158,4 @@ export async function getTVSeason(tvId: string, seasonNumber: string): Promise<S
   return fetchTMDB<Season>({
     endpoint: `/tv/${tvId}/season/${seasonNumber}`,
   });
-}
-
-export function getImageUrl(path: string | null, size: 'w500' | 'original' | 'w92' = 'w500') {
-  if (!path) return '/placeholder.jpg';
-  return `${process.env.NEXT_PUBLIC_TMDB_IMAGE_URL || 'https://image.tmdb.org/t/p'}/${size}${path}`;
-}
-
-export function getPlayerUrl(type: 'movie' | 'tv', id: string, season?: string, episode?: string) {
-  const baseUrl = process.env.NEXT_PUBLIC_PLAYER_URL || 'https://vidsrc.xyz/embed';
-  if (type === 'movie') return `${baseUrl}/movie/${id}`;
-  return `${baseUrl}/tv/${id}/${season}/${episode}`;
 }

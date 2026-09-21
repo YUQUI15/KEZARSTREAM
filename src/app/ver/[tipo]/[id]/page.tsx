@@ -2,7 +2,7 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Star, Clock, Calendar, Film, Send, ShieldCheck, Share2, Play } from 'lucide-react';
+import { Star, Clock, Calendar, Film, ShieldCheck, Share2, Play } from 'lucide-react';
 import VideoPlayer from '@/components/player/VideoPlayer';
 import SeasonSelector from '@/components/player/SeasonSelector';
 import Carousel from '@/components/ui/Carousel';
@@ -218,22 +218,12 @@ export default async function WatchPage({ params, searchParams }: PageProps) {
                 </div>
               )}
 
-              {/* Community Banner */}
+              {/* Community Quality Banner */}
               <div className="pt-4 flex flex-wrap items-center justify-between gap-4 border-t border-gray-800/80">
                 <div className="flex items-center gap-2 text-xs text-gray-400">
                   <ShieldCheck className="w-4 h-4 text-blue-400" />
-                  <span>Calidad verificada sin virus ni registro obligatorio</span>
+                  <span>Calidad Full HD verificada sin cortes ni registro obligatorio</span>
                 </div>
-
-                <a
-                  href="https://t.me/modocine_com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#229ED9]/20 hover:bg-[#229ED9]/30 border border-[#229ED9]/40 text-[#229ED9] text-xs font-bold transition-all shadow-md shadow-[#229ED9]/10"
-                >
-                  <Send className="w-3.5 h-3.5" />
-                  <span>Pedir en Telegram</span>
-                </a>
               </div>
 
             </div>

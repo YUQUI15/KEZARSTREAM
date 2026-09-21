@@ -1,37 +1,68 @@
-import { getTrending, getMovies, getTvShows, getTrendingDay } from '@/lib/tmdb';
+import {
+  getTrendingDay,
+  getMovies,
+  getTvShows,
+  getTrending,
+  getMoviesByGenre,
+  getTvByGenre,
+  getKoreanMovies,
+  getNetflixSeries
+} from '@/lib/tmdb';
 import HeroSlider from '@/components/ui/HeroSlider';
 import Carousel from '@/components/ui/Carousel';
-import Link from 'next/link';
-import { Send, Sparkles, ShieldCheck, Flame, Film, Tv, Trophy } from 'lucide-react';
 
 export const revalidate = 3600;
 
 export default async function Home() {
-  const [trendingDay, nowPlayingMovies, popularTv, trendingTv, topRatedMovies] = await Promise.all([
+  const [
+    trendingDay,
+    nowPlayingMovies,
+    netflixSeries,
+    topRatedTv,
+    trendingTv,
+    koreanMovies,
+    actionMovies,
+    comedyMovies,
+    horrorMovies,
+    adventureMovies,
+    fantasyMovies,
+    actionTv,
+    scifiTv,
+    kidsTv
+  ] = await Promise.all([
     getTrendingDay(),
     getMovies('now_playing'),
-    getTvShows('popular'),
+    getNetflixSeries(),
+    getTvShows('top_rated'),
     getTrending('tv', 'day'),
-    getMovies('top_rated')
+    getKoreanMovies(),
+    getMoviesByGenre(28),    // Acción
+    getMoviesByGenre(35),    // Comedia
+    getMoviesByGenre(27),    // Terror
+    getMoviesByGenre(12),    // Aventura
+    getMoviesByGenre(14),    // Fantasía
+    getTvByGenre(10759),     // Acción y Aventura TV
+    getTvByGenre(10765),     // Ciencia Ficción y Fantasía TV
+    getTvByGenre(10762)      // Niños / Infantil TV
   ]);
 
   return (
-    <main className="min-h-screen bg-[#000814] text-white">
-      {/* Hero Slider with Autoplay */}
+    <main className="min-h-screen bg-[#000814] text-white pb-16">
+      {/* Hero Slider with Autoplay & featured titles */}
       <HeroSlider items={trendingDay.slice(0, 7)} />
 
-      {/* Main Content Sections */}
-      <div className="container mx-auto px-4 md:px-8 py-8 space-y-10">
+      {/* Main Content Sections (matching Modocine exact layout) */}
+      <div className="container mx-auto px-4 md:px-8 py-6 space-y-12">
         
-        {/* Películas más vistas */}
+        {/* 1. Películas más vistas */}
         <Carousel
           title="Películas más vistas"
           items={nowPlayingMovies || []}
           cardType="poster"
         />
 
-        {/* TOP PELÍCULAS HOY (Numbered 1-10) */}
-        <div className="py-4">
+        {/* 2. TOP 10 Películas Hoy */}
+        <div className="py-2">
           <div className="flex items-center gap-3 mb-2 px-4 md:px-8">
             <span className="text-4xl md:text-5xl font-black tracking-tighter text-blue-500">
               TOP 10
@@ -40,7 +71,7 @@ export default async function Home() {
               <h2 className="text-lg md:text-xl font-bold text-white uppercase tracking-wider">
                 Películas en Tendencia Hoy
               </h2>
-              <p className="text-xs text-gray-400">Lo más visto por la comunidad en las últimas 24 horas</p>
+              <p className="text-xs text-gray-400">Lo más visto por la comunidad hoy</p>
             </div>
           </div>
           <Carousel
@@ -49,41 +80,24 @@ export default async function Home() {
           />
         </div>
 
-        {/* Telegram Banner Promo */}
-        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-blue-950 via-[#051226] to-indigo-950 border border-blue-900/50 p-6 md:p-8 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="space-y-2 text-center md:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#229ED9]/20 text-[#229ED9] text-xs font-bold border border-[#229ED9]/30">
-              <Send className="w-3.5 h-3.5" />
-              <span>COMUNIDAD OFICIAL</span>
-            </div>
-            <h3 className="text-xl md:text-2xl font-black text-white">
-              ¿No encuentras lo que buscas? ¡Pídelo en Telegram!
-            </h3>
-            <p className="text-xs md:text-sm text-gray-300 max-w-xl font-light">
-              Únete a miles de miembros en nuestro canal para recibir enlaces directos de estrenos, reportar caídas y solicitar tus películas y series favoritas gratis.
-            </p>
-          </div>
+        {/* 3. Series de Netflix */}
+        {netflixSeries && netflixSeries.length > 0 && (
+          <Carousel
+            title="Series de Netflix"
+            items={netflixSeries}
+            cardType="poster"
+          />
+        )}
 
-          <a
-            href="https://t.me/modocine_com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-shrink-0 flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#229ED9] hover:bg-[#1e8cc0] text-white font-bold text-sm shadow-xl shadow-[#229ED9]/30 hover:scale-105 transition-all"
-          >
-            <Send className="w-4 h-4" />
-            <span>Unirse a Telegram</span>
-          </a>
-        </div>
-
-        {/* Series más vistas */}
+        {/* 4. Series mejores valoradas */}
         <Carousel
-          title="Series más vistas"
-          items={popularTv || []}
+          title="Series mejores valoradas"
+          items={topRatedTv || []}
           cardType="poster"
         />
 
-        {/* TOP SERIES HOY (Numbered 1-10) */}
-        <div className="py-4">
+        {/* 5. TOP 10 Series Hoy */}
+        <div className="py-2">
           <div className="flex items-center gap-3 mb-2 px-4 md:px-8">
             <span className="text-4xl md:text-5xl font-black tracking-tighter text-blue-500">
               TOP 10
@@ -101,12 +115,86 @@ export default async function Home() {
           />
         </div>
 
-        {/* Películas Mejor Valoradas */}
-        <Carousel
-          title="Películas Aclamadas por la Crítica"
-          items={topRatedMovies || []}
-          cardType="poster"
-        />
+        {/* 6. Películas coreanas */}
+        {koreanMovies && koreanMovies.length > 0 && (
+          <Carousel
+            title="Películas coreanas"
+            items={koreanMovies}
+            cardType="poster"
+          />
+        )}
+
+        {/* 7. Películas de acción */}
+        {actionMovies && actionMovies.length > 0 && (
+          <Carousel
+            title="Películas de acción"
+            items={actionMovies}
+            cardType="poster"
+          />
+        )}
+
+        {/* 8. Películas de comedia */}
+        {comedyMovies && comedyMovies.length > 0 && (
+          <Carousel
+            title="Películas de comedia"
+            items={comedyMovies}
+            cardType="poster"
+          />
+        )}
+
+        {/* 9. Películas de terror */}
+        {horrorMovies && horrorMovies.length > 0 && (
+          <Carousel
+            title="Películas de terror"
+            items={horrorMovies}
+            cardType="poster"
+          />
+        )}
+
+        {/* 10. Películas de aventuras */}
+        {adventureMovies && adventureMovies.length > 0 && (
+          <Carousel
+            title="Películas de aventuras"
+            items={adventureMovies}
+            cardType="poster"
+          />
+        )}
+
+        {/* 11. Películas de fantasía */}
+        {fantasyMovies && fantasyMovies.length > 0 && (
+          <Carousel
+            title="Películas de fantasía"
+            items={fantasyMovies}
+            cardType="poster"
+          />
+        )}
+
+        {/* 12. Series de acción y aventuras */}
+        {actionTv && actionTv.length > 0 && (
+          <Carousel
+            title="Series de acción y aventuras"
+            items={actionTv}
+            cardType="poster"
+          />
+        )}
+
+        {/* 13. Series de ciencia ficción y fantasía */}
+        {scifiTv && scifiTv.length > 0 && (
+          <Carousel
+            title="Series de ciencia ficción y fantasía"
+            items={scifiTv}
+            cardType="poster"
+          />
+        )}
+
+        {/* 14. Series para niños/as */}
+        {kidsTv && kidsTv.length > 0 && (
+          <Carousel
+            title="Series para niños/as"
+            items={kidsTv}
+            cardType="poster"
+          />
+        )}
 
       </div>
     </main>

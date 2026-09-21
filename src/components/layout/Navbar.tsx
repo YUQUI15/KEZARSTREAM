@@ -4,25 +4,25 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
-import { Search, Bell, Menu, X, Dices, Send, Star, Film, Tv, Flame, Compass, Sparkles } from 'lucide-react';
+import { Search, Bell, Menu, X, Dices, Star, Film, Tv, Flame, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const SUGGESTIONS = [
-  "Busca 'Inception' para acción y misterio",
-  "Mira 'Stranger Things' terror y sci-fi",
-  "¿Buscas anime? Prueba 'Demon Slayer'",
+  "Busca 'Inception' para acción que te hará pensar",
+  "Prueba 'Stranger Things' terror y ciencia ficción",
+  "¿Buscas anime? Busca 'Demon Slayer'",
   "Mira 'Breaking Bad' clásico de drama",
   "Explora 'Interstellar' viaje en el espacio",
   "Prueba 'El Juego del Calamar' suspenso",
-  "Busca películas de Marvel o DC"
+  "Busca 'Spider-Man' o películas de acción"
 ];
 
+// Removed 'Explorar' as requested by the user
 const NAV_LINKS = [
   { name: 'Inicio', path: '/', icon: Film },
   { name: 'Películas', path: '/peliculas', icon: Film },
   { name: 'Series', path: '/series', icon: Tv },
   { name: 'Tendencias', path: '/tendencias', icon: Flame },
-  { name: 'Explorar', path: '/explorar', icon: Compass },
 ];
 
 export default function Navbar() {
@@ -48,10 +48,11 @@ export default function Navbar() {
   // Random loading state
   const [isRandomLoading, setIsRandomLoading] = useState(false);
 
-  // Online count randomizer for realism
-  const [onlineCount, setOnlineCount] = useState(1482);
+  // Online count
+  const [onlineCount, setOnlineCount] = useState(1495);
 
   const searchBoxRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Typewriter loop
   useEffect(() => {
@@ -76,7 +77,7 @@ export default function Navbar() {
     return () => clearTimeout(timer);
   }, [placeholderText, isDeleting, placeholderIndex]);
 
-  // Online count slight flicker
+  // Online count flicker
   useEffect(() => {
     const interval = setInterval(() => {
       setOnlineCount((prev) => prev + Math.floor(Math.random() * 5) - 2);
@@ -115,16 +116,16 @@ export default function Navbar() {
     setLoading(true);
     const delayDebounce = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+        const res = await fetch(`/api/search?q=${encodeURIComponent(query.trim())}`);
         const data = await res.json();
         setResults(data.results || []);
         setShowDropdown(true);
       } catch (err) {
-        console.error(err);
+        console.error('Search fetch error:', err);
       } finally {
         setLoading(false);
       }
-    }, 300);
+    }, 250);
 
     return () => clearTimeout(delayDebounce);
   }, [query]);
@@ -208,18 +209,29 @@ export default function Navbar() {
           <div ref={searchBoxRef} className="hidden md:block relative flex-1 max-w-xs lg:max-w-md">
             <form onSubmit={handleSearchSubmit} className="relative">
               <input
+                ref={searchInputRef}
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onFocus={() => query.trim().length >= 2 && setShowDropdown(true)}
                 placeholder={placeholderText || "Buscar películas, series..."}
-                className="w-full bg-[#020b18]/80 text-white placeholder-gray-400 text-xs pl-10 pr-9 py-2.5 rounded-full border border-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all shadow-inner"
+                className="w-full bg-[#020b18]/80 text-white placeholder-gray-400 text-xs pl-10 pr-9 py-2.5 rounded-full border border-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all shadow-inner cursor-text"
               />
-              <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-3 pointer-events-none" />
+              <button
+                type="submit"
+                className="absolute left-3 top-2.5 text-gray-400 hover:text-blue-400 transition-colors"
+                title="Buscar"
+              >
+                <Search className="w-4 h-4" />
+              </button>
               {query && (
                 <button
                   type="button"
-                  onClick={() => setQuery('')}
+                  onClick={() => {
+                    setQuery('');
+                    setShowDropdown(false);
+                    if (searchInputRef.current) searchInputRef.current.focus();
+                  }}
                   className="absolute right-3 top-2.5 text-gray-400 hover:text-white"
                 >
                   <X className="w-4 h-4" />
@@ -234,9 +246,9 @@ export default function Navbar() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 10 }}
-                  className="absolute top-full mt-2 w-full bg-[#051226]/95 backdrop-blur-xl border border-blue-900/50 rounded-2xl shadow-2xl overflow-hidden z-50 divide-y divide-gray-800/60"
+                  className="absolute top-full mt-2 w-full bg-[#051226]/98 backdrop-blur-xl border border-blue-900/50 rounded-2xl shadow-2xl overflow-hidden z-50 divide-y divide-gray-800/60"
                 >
-                  <div className="p-2.5 max-h-96 overflow-y-auto space-y-1">
+                  <div className="p-2 max-h-96 overflow-y-auto space-y-1">
                     {results.map((item: any) => {
                       const isMovie = item.media_type === 'movie' || !item.name;
                       const title = isMovie ? item.title : item.name;
@@ -248,7 +260,7 @@ export default function Navbar() {
                           key={item.id}
                           href={link}
                           onClick={() => setShowDropdown(false)}
-                          className="flex items-center gap-3 p-2 rounded-xl hover:bg-blue-600/20 transition-colors group"
+                          className="flex items-center gap-3 p-2 rounded-xl hover:bg-blue-600/20 transition-colors group cursor-pointer"
                         >
                           <div className="relative w-10 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-gray-900 border border-gray-800">
                             {item.poster_path ? (
@@ -276,7 +288,7 @@ export default function Navbar() {
                               {item.vote_average ? (
                                 <span className="flex items-center gap-0.5 text-yellow-400">
                                   <Star className="w-3 h-3 fill-current" />
-                                  {item.vote_average.toFixed(1)}
+                                  {Number(item.vote_average).toFixed(1)}
                                 </span>
                               ) : null}
                             </div>
@@ -288,7 +300,7 @@ export default function Navbar() {
                   <div className="p-2 text-center bg-blue-950/30">
                     <button
                       onClick={handleSearchSubmit}
-                      className="text-xs text-blue-400 hover:text-blue-300 font-medium"
+                      className="text-xs text-blue-400 hover:text-blue-300 font-medium cursor-pointer"
                     >
                       Ver todos los resultados para &quot;{query}&quot; →
                     </button>
@@ -305,7 +317,7 @@ export default function Navbar() {
             <button
               onClick={handleSurpriseMe}
               disabled={isRandomLoading}
-              className="flex items-center gap-1.5 px-3 md:px-4 py-2 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold transition-all shadow-lg shadow-blue-600/30 hover:shadow-blue-500/50 hover:scale-105 active:scale-95"
+              className="flex items-center gap-1.5 px-3 md:px-4 py-2 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold transition-all shadow-lg shadow-blue-600/30 hover:shadow-blue-500/50 hover:scale-105 active:scale-95 cursor-pointer"
               title="Ver película aleatoria"
             >
               <Dices className={`w-4 h-4 ${isRandomLoading ? 'animate-spin' : ''}`} />
@@ -315,29 +327,17 @@ export default function Navbar() {
             {/* Mobile Search Trigger */}
             <button
               onClick={() => setSearchModalOpen(true)}
-              className="md:hidden p-2 rounded-full text-gray-300 hover:text-white hover:bg-white/10 transition-colors"
+              className="md:hidden p-2 rounded-full text-gray-300 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
               title="Buscar"
             >
               <Search className="w-5 h-5" />
             </button>
 
-            {/* Telegram Channel Button */}
-            <a
-              href="https://t.me/modocine_com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden sm:flex items-center gap-1 px-3 py-2 rounded-full bg-[#229ED9]/20 hover:bg-[#229ED9]/30 border border-[#229ED9]/40 text-[#229ED9] text-xs font-semibold transition-all"
-              title="Canal oficial de Telegram"
-            >
-              <Send className="w-3.5 h-3.5" />
-              <span>Telegram</span>
-            </a>
-
             {/* Notifications Button */}
             <div className="relative">
               <button
                 onClick={() => setNotificationsOpen(!notificationsOpen)}
-                className="p-2 rounded-full text-gray-300 hover:text-white hover:bg-white/10 transition-colors relative"
+                className="p-2 rounded-full text-gray-300 hover:text-white hover:bg-white/10 transition-colors relative cursor-pointer"
                 title="Notificaciones"
               >
                 <Bell className="w-5 h-5" />
@@ -345,7 +345,7 @@ export default function Navbar() {
                 <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full"></span>
               </button>
 
-              {/* Notifications Dropdown */}
+              {/* Notifications Dropdown (Telegram removed) */}
               <AnimatePresence>
                 {notificationsOpen && (
                   <motion.div
@@ -363,20 +363,12 @@ export default function Navbar() {
                     </div>
                     <div className="py-3 space-y-2.5 text-xs text-gray-300">
                       <p>
-                        🎉 <b>¡Lanzamiento de KEZARSTREAM!</b> Disfruta de películas y series en calidad 1080p con audio en Español Latino y subtítulos.
+                        🎉 <b>¡Plataforma 100% activa!</b> Disfruta de películas y series en calidad 1080p y 4K con audio en Español Latino.
                       </p>
                       <p className="text-gray-400">
-                        Si un reproductor no carga, usa las pestañas de <b>Servidor 1 o Servidor 2</b> para cambiar de fuente al instante.
+                        Si algún video tarda en iniciar, utiliza las fuentes de <b>NSRPLAY</b> o <b>MULTIEMBED</b> en la parte superior del reproductor.
                       </p>
                     </div>
-                    <a
-                      href="https://t.me/modocine_com"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block text-center py-2 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-all shadow-md shadow-blue-600/30"
-                    >
-                      Unirse al Canal de Telegram 🚀
-                    </a>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -384,7 +376,7 @@ export default function Navbar() {
 
             {/* Mobile Menu Toggle */}
             <button
-              className="lg:hidden p-2 rounded-full text-gray-300 hover:text-white hover:bg-white/10"
+              className="lg:hidden p-2 rounded-full text-gray-300 hover:text-white hover:bg-white/10 cursor-pointer"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               title="Menú"
             >
@@ -419,18 +411,6 @@ export default function Navbar() {
                   </Link>
                 );
               })}
-
-              <div className="pt-2 border-t border-gray-800 flex flex-col gap-2">
-                <a
-                  href="https://t.me/modocine_com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#229ED9]/20 text-[#229ED9] text-xs font-bold border border-[#229ED9]/30"
-                >
-                  <Send className="w-4 h-4" />
-                  <span>Canal Oficial de Telegram</span>
-                </a>
-              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -443,13 +423,13 @@ export default function Navbar() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-[#000814]/95 backdrop-blur-2xl p-4 md:hidden flex flex-col"
+            className="fixed inset-0 z-50 bg-[#000814]/98 backdrop-blur-2xl p-4 md:hidden flex flex-col"
           >
             <div className="flex items-center justify-between pb-4 border-b border-gray-800">
-              <span className="text-sm font-bold text-gray-300">Buscar contenido</span>
+              <span className="text-sm font-bold text-gray-300">Buscar en el catálogo</span>
               <button
                 onClick={() => setSearchModalOpen(false)}
-                className="p-1 rounded-full text-gray-400 hover:text-white"
+                className="p-1 rounded-full text-gray-400 hover:text-white cursor-pointer"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -461,15 +441,17 @@ export default function Navbar() {
                 autoFocus
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Película, serie, anime..."
-                className="w-full bg-[#051226] text-white text-base pl-11 pr-10 py-3.5 rounded-2xl border border-blue-900/50 focus:border-blue-500 outline-none"
+                placeholder="Película, serie..."
+                className="w-full bg-[#051226] text-white text-base pl-11 pr-10 py-3.5 rounded-2xl border border-blue-900/50 focus:border-blue-500 outline-none cursor-text"
               />
-              <Search className="w-5 h-5 text-gray-400 absolute left-3.5 top-4" />
+              <button type="submit" className="absolute left-3.5 top-4 text-gray-400">
+                <Search className="w-5 h-5" />
+              </button>
               {query && (
                 <button
                   type="button"
                   onClick={() => setQuery('')}
-                  className="absolute right-3.5 top-3.5 text-gray-400"
+                  className="absolute right-3.5 top-3.5 text-gray-400 cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -480,13 +462,13 @@ export default function Navbar() {
             <div className="mt-4">
               <p className="text-xs text-gray-400 mb-2 font-medium">Búsquedas populares:</p>
               <div className="flex flex-wrap gap-2">
-                {['Inception', 'Stranger Things', 'Breaking Bad', 'Demon Slayer', 'Avengers', 'Spider-Man'].map((item) => (
+                {['Inception', 'Stranger Things', 'Breaking Bad', 'Demon Slayer', 'Spider-Man', 'Resident Evil'].map((item) => (
                   <button
                     key={item}
                     onClick={() => {
                       setQuery(item);
                     }}
-                    className="px-3 py-1.5 rounded-full bg-blue-950/40 border border-blue-900/40 text-xs text-blue-300 hover:bg-blue-900/50"
+                    className="px-3 py-1.5 rounded-full bg-blue-950/40 border border-blue-900/40 text-xs text-blue-300 hover:bg-blue-900/50 cursor-pointer"
                   >
                     {item}
                   </button>

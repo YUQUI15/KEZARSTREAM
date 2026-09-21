@@ -5,6 +5,10 @@ import React, { useEffect, ReactNode } from 'react';
 export default function ProtectionWrapper({ children }: { children: ReactNode }) {
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
+        return;
+      }
       e.preventDefault();
     };
 
@@ -13,6 +17,7 @@ export default function ProtectionWrapper({ children }: { children: ReactNode })
         e.key === 'F12' ||
         (e.ctrlKey && e.shiftKey && e.key === 'I') ||
         (e.ctrlKey && e.shiftKey && e.key === 'J') ||
+        (e.ctrlKey && e.key === 'u') ||
         (e.ctrlKey && e.key === 'U') ||
         (e.ctrlKey && e.shiftKey && e.key === 'C')
       ) {
@@ -21,21 +26,20 @@ export default function ProtectionWrapper({ children }: { children: ReactNode })
     };
 
     const handleSelectStart = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+        return; // Allow normal input typing and text selection in search boxes
+      }
       e.preventDefault();
     };
 
     const handleDragStart = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
+        return;
+      }
       e.preventDefault();
     };
-
-    const noop = () => {};
-    const originalConsole = { ...console };
-    
-    console.log = noop;
-    console.info = noop;
-    console.warn = noop;
-    console.error = noop;
-    console.debug = noop;
 
     document.addEventListener('contextmenu', handleContextMenu);
     document.addEventListener('keydown', handleKeyDown);
@@ -47,12 +51,6 @@ export default function ProtectionWrapper({ children }: { children: ReactNode })
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('selectstart', handleSelectStart);
       document.removeEventListener('dragstart', handleDragStart);
-      
-      console.log = originalConsole.log;
-      console.info = originalConsole.info;
-      console.warn = originalConsole.warn;
-      console.error = originalConsole.error;
-      console.debug = originalConsole.debug;
     };
   }, []);
 
