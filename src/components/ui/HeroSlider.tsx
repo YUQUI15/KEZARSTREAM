@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Info, Star, ChevronLeft, ChevronRight, Flame } from 'lucide-react';
 import { Media } from '@/types/tmdb';
+import SafeImage from '@/components/ui/SafeImage';
 
 interface HeroSliderProps {
   items: Media[];
@@ -30,11 +31,7 @@ export default function HeroSlider({ items }: HeroSliderProps) {
   const isMovie = activeItem.media_type === 'movie' || (!activeItem.name && !!activeItem.title);
   const title = isMovie ? activeItem.title : activeItem.name;
   const link = `/ver/${isMovie ? 'pelicula' : 'serie'}/${activeItem.id}`;
-  const backdropUrl = activeItem.backdrop_path
-    ? `https://image.tmdb.org/t/p/original${activeItem.backdrop_path}`
-    : activeItem.poster_path
-    ? `https://image.tmdb.org/t/p/original${activeItem.poster_path}`
-    : '';
+  const backdropPath = activeItem.backdrop_path || activeItem.poster_path;
 
   const rating = Number(activeItem.vote_average || 0).toFixed(1);
   const year = (activeItem.release_date || activeItem.first_air_date || '').substring(0, 4);
@@ -59,9 +56,10 @@ export default function HeroSlider({ items }: HeroSliderProps) {
           transition={{ duration: 0.9 }}
           className="absolute inset-0"
         >
-          {backdropUrl && (
-            <Image
-              src={backdropUrl}
+          {backdropPath && (
+            <SafeImage
+              rawPath={backdropPath}
+              tmdbSize="original"
               alt={title || 'Hero'}
               fill
               priority
@@ -165,10 +163,6 @@ export default function HeroSlider({ items }: HeroSliderProps) {
       <div className="hidden lg:flex absolute bottom-8 right-12 z-30 items-end gap-3 bg-black/40 p-2 rounded-2xl backdrop-blur-md border border-gray-800/80">
         {items.slice(0, 5).map((item, idx) => {
           const isActive = idx === currentIndex;
-          const thumbPoster = item.poster_path
-            ? `https://image.tmdb.org/t/p/w185${item.poster_path}`
-            : '';
-
           return (
             <button
               key={item.id || idx}
@@ -179,14 +173,13 @@ export default function HeroSlider({ items }: HeroSliderProps) {
                   : 'w-12 h-18 opacity-50 hover:opacity-100 hover:scale-100'
               }`}
             >
-              {thumbPoster && (
-                <Image
-                  src={thumbPoster}
-                  alt="Miniatura"
-                  fill
-                  className="object-cover"
-                />
-              )}
+              <SafeImage
+                rawPath={item.poster_path}
+                tmdbSize="w185"
+                alt="Miniatura"
+                fill
+                className="object-cover"
+              />
             </button>
           );
         })}

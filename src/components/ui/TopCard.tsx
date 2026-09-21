@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Play } from 'lucide-react';
 import { MediaItem, Movie, TVShow } from '@/types/tmdb';
+import SafeImage from '@/components/ui/SafeImage';
 
 interface TopCardProps {
   media: Movie | TVShow | MediaItem | any;
@@ -12,21 +12,11 @@ interface TopCardProps {
 }
 
 export default function TopCard({ media, index }: TopCardProps) {
-  const [imgError, setImgError] = useState(false);
-
   if (!media) return null;
 
   const isMovie = media.media_type === 'movie' || (!media.name && !!media.title);
   const title = (isMovie ? media.title : media.name) || 'Título';
   const link = `/ver/${isMovie ? 'pelicula' : 'serie'}/${media.id}`;
-  
-  const posterUrl = imgError
-    ? '/placeholder-poster.svg'
-    : media.poster_path
-    ? `https://image.tmdb.org/t/p/w342${media.poster_path}`
-    : media.backdrop_path
-    ? `https://image.tmdb.org/t/p/w342${media.backdrop_path}`
-    : '/placeholder-poster.svg';
 
   const ranking = index + 1;
 
@@ -47,13 +37,12 @@ export default function TopCard({ media, index }: TopCardProps) {
 
         {/* Poster Card behind/next to the number */}
         <div className="relative w-[145px] md:w-[165px] h-[210px] md:h-[240px] ml-16 md:ml-20 rounded-2xl overflow-hidden shadow-2xl border border-gray-800 z-20 group-hover:border-blue-500 group-hover:shadow-[0_0_25px_rgba(59,130,246,0.6)] transition-all duration-300 bg-[#051226]">
-          <Image
-            src={posterUrl}
+          <SafeImage
+            rawPath={media.poster_path || media.backdrop_path}
+            tmdbSize="w342"
             alt={title || `Top ${ranking}`}
             fill
-            unoptimized
             sizes="165px"
-            onError={() => setImgError(true)}
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
 

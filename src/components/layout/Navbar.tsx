@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
 import { Search, Bell, Menu, X, Dices, Star, Film, Tv, Flame, Sparkles, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import SafeImage from '@/components/ui/SafeImage';
 
 const SUGGESTIONS = [
   "Busca 'Inception' para acción que te hará pensar",
@@ -262,10 +263,6 @@ export default function Navbar() {
                       const title = isMovie ? item.title : item.name;
                       const link = `/ver/${isMovie ? 'pelicula' : 'serie'}/${item.id}`;
                       const year = (item.release_date || item.first_air_date || '').substring(0, 4);
-                      const poster = item.poster_path
-                        ? `https://image.tmdb.org/t/p/w185${item.poster_path}`
-                        : '/placeholder-poster.svg';
-
                       return (
                         <Link
                           key={item.id}
@@ -274,11 +271,11 @@ export default function Navbar() {
                           className="flex items-start gap-3.5 p-2.5 rounded-xl hover:bg-blue-600/20 transition-colors group cursor-pointer"
                         >
                           <div className="relative w-12 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-gray-900 border border-gray-800">
-                            <Image
-                              src={poster}
+                            <SafeImage
+                              rawPath={item.poster_path}
+                              tmdbSize="w185"
                               alt={title || 'Póster'}
                               fill
-                              unoptimized
                               className="object-cover"
                             />
                           </div>
@@ -504,10 +501,6 @@ export default function Navbar() {
                 const title = isMovie ? item.title : item.name;
                 const link = `/ver/${isMovie ? 'pelicula' : 'serie'}/${item.id}`;
                 const year = (item.release_date || item.first_air_date || '').substring(0, 4);
-                const poster = item.poster_path
-                  ? `https://image.tmdb.org/t/p/w185${item.poster_path}`
-                  : '/placeholder-poster.svg';
-
                 return (
                   <Link
                     key={item.id}
@@ -516,11 +509,11 @@ export default function Navbar() {
                     className="flex items-start gap-3.5 py-3 hover:bg-white/5 px-2 rounded-xl transition-colors cursor-pointer"
                   >
                     <div className="relative w-14 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-gray-900 border border-gray-800">
-                      <Image
-                        src={poster}
+                      <SafeImage
+                        rawPath={item.poster_path}
+                        tmdbSize="w185"
                         alt={title || 'Póster'}
                         fill
-                        unoptimized
                         className="object-cover"
                       />
                     </div>

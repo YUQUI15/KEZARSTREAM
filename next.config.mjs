@@ -14,6 +14,11 @@ const nextConfig = {
         hostname: 'image.tmdb.org',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'tmdb-image-prod.b-cdn.net',
+        pathname: '/**',
+      },
     ],
   },
 };

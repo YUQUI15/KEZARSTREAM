@@ -1,8 +1,8 @@
 import React from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Star, Clock, Calendar, Film, ShieldCheck, Share2, Play } from 'lucide-react';
+import SafeImage from '@/components/ui/SafeImage';
 import VideoPlayer from '@/components/player/VideoPlayer';
 import SeasonSelector from '@/components/player/SeasonSelector';
 import Carousel from '@/components/ui/Carousel';
@@ -67,21 +67,17 @@ export default async function WatchPage({ params, searchParams }: PageProps) {
   const isMovie = mediaType === 'movie';
   const year = (details.release_date || details.first_air_date || '').substring(0, 4);
   const rating = Number(details.vote_average || 0).toFixed(1);
-  const backdropUrl = details.backdrop_path
-    ? `https://image.tmdb.org/t/p/original${details.backdrop_path}`
-    : '';
-  const posterUrl = details.poster_path
-    ? `https://image.tmdb.org/t/p/w500${details.poster_path}`
-    : '/placeholder-poster.png';
+  const backdropPath = details.backdrop_path;
 
   return (
     <main className="min-h-screen bg-[#000814] text-white pt-20 pb-20 relative overflow-hidden">
       
       {/* Ambient backdrop glow */}
-      {backdropUrl && (
+      {backdropPath && (
         <div className="absolute top-0 inset-x-0 h-[650px] overflow-hidden opacity-25 pointer-events-none">
-          <Image
-            src={backdropUrl}
+          <SafeImage
+            rawPath={backdropPath}
+            tmdbSize="original"
             alt="Backdrop glow"
             fill
             priority
@@ -127,8 +123,9 @@ export default async function WatchPage({ params, searchParams }: PageProps) {
             
             {/* Poster thumbnail */}
             <div className="relative w-36 md:w-48 aspect-[2/3] rounded-2xl overflow-hidden shadow-2xl border border-blue-900/40 flex-shrink-0 mx-auto md:mx-0">
-              <Image
-                src={posterUrl}
+              <SafeImage
+                rawPath={details.poster_path}
+                tmdbSize="w500"
                 alt={title}
                 fill
                 priority

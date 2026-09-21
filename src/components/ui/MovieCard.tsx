@@ -1,31 +1,21 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Play } from 'lucide-react';
 import { MediaItem, Movie, TVShow } from '@/types/tmdb';
+import SafeImage from '@/components/ui/SafeImage';
 
 interface MovieCardProps {
   media: Movie | TVShow | MediaItem | any;
 }
 
 export default function MovieCard({ media }: MovieCardProps) {
-  const [imgError, setImgError] = useState(false);
-
   if (!media) return null;
 
   const isMovie = media.media_type === 'movie' || (!media.name && !!media.title);
   const title = (isMovie ? media.title : media.name) || 'Título no disponible';
   const link = `/ver/${isMovie ? 'pelicula' : 'serie'}/${media.id}`;
-  
-  const posterUrl = imgError
-    ? '/placeholder-poster.svg'
-    : media.poster_path
-    ? `https://image.tmdb.org/t/p/w342${media.poster_path}`
-    : media.backdrop_path
-    ? `https://image.tmdb.org/t/p/w342${media.backdrop_path}`
-    : '/placeholder-poster.svg';
 
   const rawRating = Number(media.vote_average) || 0;
   const ratingFormatted = rawRating > 0 ? rawRating.toFixed(1) : 'NR';
@@ -48,13 +38,12 @@ export default function MovieCard({ media }: MovieCardProps) {
         href={link}
         className="block relative w-full aspect-[2/3] rounded-2xl overflow-hidden bg-[#051226] border border-blue-950/60 shadow-xl group-hover:shadow-[0_0_25px_rgba(59,130,246,0.45)] group-hover:border-blue-500/50 transition-all duration-300"
       >
-        <Image
-          src={posterUrl}
+        <SafeImage
+          rawPath={media.poster_path || media.backdrop_path}
+          tmdbSize="w342"
           alt={title}
           fill
-          unoptimized
           sizes="(max-width: 640px) 140px, 180px"
-          onError={() => setImgError(true)}
           className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
 
