@@ -112,6 +112,7 @@ export default async function WatchPage({ params, searchParams }: PageProps) {
           <VideoPlayer
             type={mediaType as 'movie' | 'tv'}
             id={id}
+            imdbId={details.imdb_id || ''}
             season={season}
             episode={episode}
             title={title}
