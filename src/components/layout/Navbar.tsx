@@ -31,6 +31,8 @@ export default function Navbar() {
   const pathname = usePathname();
 
   const [isScrolled, setIsScrolled] = useState(false);
+  const isHeroPage = pathname === '/' || pathname === '/peliculas' || pathname === '/series' || pathname === '/tendencias';
+  const isOverHero = isHeroPage && !isScrolled;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -163,9 +165,11 @@ export default function Navbar() {
     <>
       <header
         className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-          isScrolled
+          isOverHero
+            ? 'bg-gradient-to-b from-black/85 via-black/45 to-transparent py-3.5'
+            : isScrolled
             ? 'bg-white/95 dark:bg-[#000814]/95 backdrop-blur-md shadow-lg shadow-purple-900/5 dark:shadow-blue-950/30 border-b border-pastel-purple/30 dark:border-blue-950/40 py-2.5'
-            : 'bg-gradient-to-b from-white/95 dark:from-[#000814]/90 via-white/60 dark:via-[#000814]/40 to-transparent py-3.5'
+            : 'bg-white/95 dark:bg-[#000814]/90 backdrop-blur-md border-b border-slate-200 dark:border-blue-950/30 py-3.5'
         }`}
       >
         <div className="container mx-auto px-4 md:px-8 flex items-center justify-between gap-3 md:gap-4">
@@ -183,24 +187,37 @@ export default function Navbar() {
                 />
               </div>
               <div className="flex flex-col">
-                <span className="text-lg md:text-2xl font-black tracking-tight leading-none text-slate-900 dark:text-white group-hover:opacity-95 transition-all">
-                  KEZAR<span className="text-pastel-gradient">STREAM</span>
+                <span className="text-lg md:text-2xl font-black tracking-tight leading-none group-hover:opacity-95 transition-all">
+                  <span className={isOverHero ? 'text-white' : 'text-slate-900 dark:text-white'}>KEZAR</span>
+                  <span className={isOverHero ? 'text-pastel-gradient font-black' : 'bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-600 dark:from-[#FEAEBB] dark:via-[#F3B2DB] dark:to-[#6FCFEB] bg-clip-text text-transparent font-black'}>
+                    STREAM
+                  </span>
                 </span>
-                <span className="text-[8px] md:text-[9px] font-bold tracking-widest text-[#C19ADE] dark:text-[#99E6D8] uppercase mt-0.5">
+                <span className={`text-[8px] md:text-[9px] font-bold tracking-widest uppercase mt-0.5 ${
+                  isOverHero ? 'text-[#6FCFEB]' : 'text-purple-600 dark:text-[#99E6D8]'
+                }`}>
                   Streaming HD
                 </span>
               </div>
             </Link>
 
             {/* Live Online Badge */}
-            <div className="hidden xl:flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-200/60 dark:bg-blue-950/40 border border-pastel-purple/30 dark:border-blue-900/30 text-[11px] text-slate-700 dark:text-gray-300">
+            <div className={`hidden xl:flex items-center gap-2 px-2.5 py-1 rounded-full text-[11px] transition-all ${
+              isOverHero
+                ? 'bg-black/40 backdrop-blur-md border border-white/20 text-gray-200'
+                : 'bg-slate-200/60 dark:bg-blue-950/40 border border-pastel-purple/30 dark:border-blue-900/30 text-slate-700 dark:text-gray-300'
+            }`}>
               <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse"></span>
               <span><b>{onlineCount.toLocaleString()}</b> online</span>
             </div>
           </div>
 
           {/* Navigation Links Desktop */}
-          <nav className="hidden lg:flex items-center gap-1 bg-slate-100/80 dark:bg-[#020b18]/60 p-1 rounded-full border border-slate-200/80 dark:border-gray-800/60 backdrop-blur-md flex-shrink-0">
+          <nav className={`hidden lg:flex items-center gap-1 p-1 rounded-full border backdrop-blur-md flex-shrink-0 transition-all ${
+            isOverHero
+              ? 'bg-black/40 border-white/20'
+              : 'bg-slate-100/80 dark:bg-[#020b18]/60 border-slate-200/80 dark:border-gray-800/60'
+          }`}>
             {NAV_LINKS.map((link) => {
               const Icon = link.icon;
               const isActive = pathname === link.path;
@@ -211,6 +228,8 @@ export default function Navbar() {
                   className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
                     isActive
                       ? 'bg-pastel-gradient text-slate-950 font-bold shadow-md shadow-pastel-blue/30'
+                      : isOverHero
+                      ? 'text-gray-200 hover:text-white hover:bg-white/15'
                       : 'text-slate-600 dark:text-gray-300 hover:text-slate-950 dark:hover:text-white hover:bg-white dark:hover:bg-white/5'
                   }`}
                 >
@@ -231,18 +250,26 @@ export default function Navbar() {
                 onChange={(e) => setQuery(e.target.value)}
                 onFocus={() => query.trim().length >= 2 && setShowDropdown(true)}
                 placeholder={placeholderText || "Buscar películas, series..."}
-                className="w-full bg-slate-100/90 dark:bg-[#020b18]/80 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-400 text-xs pl-10 pr-9 py-2.5 rounded-full border border-slate-200 dark:border-gray-800 focus:border-pastel-purple dark:focus:border-blue-500 focus:ring-1 focus:ring-pastel-purple outline-none transition-all shadow-inner cursor-text"
+                className={`w-full text-xs pl-10 pr-9 py-2.5 rounded-full border outline-none transition-all shadow-inner cursor-text ${
+                  isOverHero
+                    ? 'bg-black/40 backdrop-blur-md text-white placeholder-gray-300 border-white/25 focus:border-pastel-cyan focus:ring-1 focus:ring-pastel-cyan'
+                    : 'bg-slate-100/90 dark:bg-[#020b18]/80 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-400 border border-slate-200 dark:border-gray-800 focus:border-pastel-purple dark:focus:border-blue-500 focus:ring-1 focus:ring-pastel-purple'
+                }`}
               />
               <button
                 type="submit"
-                className="absolute left-3 top-2.5 text-slate-400 dark:text-gray-400 hover:text-pastel-purple dark:hover:text-blue-400 transition-colors cursor-pointer"
+                className={`absolute left-3 top-2.5 transition-colors cursor-pointer ${
+                  isOverHero
+                    ? 'text-gray-300 hover:text-pastel-cyan'
+                    : 'text-slate-400 dark:text-gray-400 hover:text-pastel-purple dark:hover:text-blue-400'
+                }`}
                 title="Buscar"
               >
                 <Search className="w-4 h-4" />
               </button>
               {loading && (
                 <div className="absolute right-9 top-2.5">
-                  <Loader2 className="w-4 h-4 text-pastel-purple dark:text-blue-400 animate-spin" />
+                  <Loader2 className={`w-4 h-4 animate-spin ${isOverHero ? 'text-pastel-cyan' : 'text-pastel-purple dark:text-blue-400'}`} />
                 </div>
               )}
               {query && (
@@ -253,7 +280,11 @@ export default function Navbar() {
                     setShowDropdown(false);
                     if (searchInputRef.current) searchInputRef.current.focus();
                   }}
-                  className="absolute right-3 top-2.5 text-slate-400 dark:text-gray-400 hover:text-slate-700 dark:hover:text-white cursor-pointer"
+                  className={`absolute right-3 top-2.5 transition-colors cursor-pointer ${
+                    isOverHero
+                      ? 'text-gray-300 hover:text-white'
+                      : 'text-slate-400 dark:text-gray-400 hover:text-slate-700 dark:hover:text-white'
+                  }`}
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -350,7 +381,11 @@ export default function Navbar() {
             {/* Mobile Search Trigger */}
             <button
               onClick={() => setSearchModalOpen(true)}
-              className="md:hidden p-2 rounded-full text-slate-600 dark:text-gray-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className={`md:hidden p-2 rounded-full transition-colors cursor-pointer ${
+                isOverHero
+                  ? 'text-white hover:bg-white/15'
+                  : 'text-slate-600 dark:text-gray-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10'
+              }`}
               title="Buscar"
             >
               <Search className="w-5 h-5" />
@@ -360,7 +395,11 @@ export default function Navbar() {
             <div className="relative">
               <button
                 onClick={() => setNotificationsOpen(!notificationsOpen)}
-                className="p-2 rounded-full text-slate-600 dark:text-gray-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors relative cursor-pointer"
+                className={`p-2 rounded-full transition-colors relative cursor-pointer ${
+                  isOverHero
+                    ? 'text-white hover:bg-white/15'
+                    : 'text-slate-600 dark:text-gray-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10'
+                }`}
                 title="Notificaciones"
               >
                 <Bell className="w-5 h-5" />
@@ -399,7 +438,11 @@ export default function Navbar() {
 
             {/* Mobile Menu Toggle */}
             <button
-              className="lg:hidden p-2 rounded-full text-slate-600 dark:text-gray-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 cursor-pointer"
+              className={`lg:hidden p-2 rounded-full cursor-pointer transition-colors ${
+                isOverHero
+                  ? 'text-white hover:bg-white/15'
+                  : 'text-slate-600 dark:text-gray-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10'
+              }`}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               title="Menú"
             >

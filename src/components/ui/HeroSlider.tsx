@@ -14,20 +14,21 @@ interface HeroSliderProps {
 
 export default function HeroSlider({ items }: HeroSliderProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const heroItems = (items || []).slice(0, Math.min(items?.length || 0, 6));
 
   useEffect(() => {
-    if (!items || items.length === 0) return;
+    if (!heroItems || heroItems.length === 0) return;
 
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % items.length);
+      setCurrentIndex((prev) => (prev + 1) % heroItems.length);
     }, 7000);
 
     return () => clearInterval(interval);
-  }, [items]);
+  }, [heroItems.length]);
 
-  if (!items || items.length === 0) return null;
+  if (!heroItems || heroItems.length === 0) return null;
 
-  const activeItem = items[currentIndex];
+  const activeItem = heroItems[currentIndex] || heroItems[0];
   const isMovie = activeItem.media_type === 'movie' || (!activeItem.name && !!activeItem.title);
   const title = isMovie ? activeItem.title : activeItem.name;
   const link = `/ver/${isMovie ? 'pelicula' : 'serie'}/${activeItem.id}`;
@@ -37,11 +38,11 @@ export default function HeroSlider({ items }: HeroSliderProps) {
   const year = (activeItem.release_date || activeItem.first_air_date || '').substring(0, 4);
 
   const prevSlide = () => {
-    setCurrentIndex((prev) => (prev - 1 + items.length) % items.length);
+    setCurrentIndex((prev) => (prev - 1 + heroItems.length) % heroItems.length);
   };
 
   const nextSlide = () => {
-    setCurrentIndex((prev) => (prev + 1) % items.length);
+    setCurrentIndex((prev) => (prev + 1) % heroItems.length);
   };
 
   return (
@@ -68,10 +69,19 @@ export default function HeroSlider({ items }: HeroSliderProps) {
             />
           )}
 
-          {/* Gradients adaptados a modo claro (f8fafd) y oscuro (000814) */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#f8fafd] dark:from-[#000814] via-[#000814]/60 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#000814]/90 via-[#000814]/60 md:via-[#000814]/30 to-transparent" />
-          <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-[#f8fafd] dark:from-[#000814] to-transparent" />
+          {/* Gradients cinematográficos de alta fidelidad */}
+          {/* 1. Sombra izquierda para que título, badges y sinopsis sean 100% legibles */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/75 md:via-black/35 to-transparent z-10 pointer-events-none" />
+
+          {/* 2. Sombra superior para integración perfecta con la barra de navegación */}
+          <div className="absolute top-0 inset-x-0 h-36 bg-gradient-to-b from-black/85 via-black/40 to-transparent z-10 pointer-events-none" />
+
+          {/* 3. Desvanecimiento inferior sin mezclar blanco con negro */}
+          {/* En Modo Oscuro: se funde suavemente al fondo #000814 */}
+          <div className="absolute bottom-0 inset-x-0 h-32 md:h-44 bg-gradient-to-t from-[#000814] via-[#000814]/80 to-transparent z-10 pointer-events-none hidden dark:block" />
+
+          {/* En Modo Claro: desvanecimiento perla limpio hacia #f8fafd sin tonos grises */}
+          <div className="absolute bottom-0 inset-x-0 h-24 md:h-32 bg-gradient-to-t from-[#f8fafd] via-[#f8fafd]/80 to-transparent z-10 pointer-events-none block dark:hidden" />
         </motion.div>
       </AnimatePresence>
 
@@ -159,31 +169,76 @@ export default function HeroSlider({ items }: HeroSliderProps) {
         </button>
       </div>
 
-      {/* Interactive Thumbnails Selector on Desktop Bottom-Right */}
-      <div className="hidden lg:flex absolute bottom-8 right-12 z-30 items-end gap-3 bg-black/50 p-2 rounded-2xl backdrop-blur-md border border-white/20">
-        {items.slice(0, 5).map((item, idx) => {
-          const isActive = idx === currentIndex;
-          return (
-            <button
-              key={item.id || idx}
-              onClick={() => setCurrentIndex(idx)}
-              className={`relative rounded-xl overflow-hidden transition-all duration-300 ${
-                isActive
-                  ? 'w-16 h-24 ring-2 ring-[#6FCFEB] shadow-xl shadow-cyan-500/40 scale-105'
-                  : 'w-12 h-18 opacity-50 hover:opacity-100 hover:scale-100'
-              }`}
-            >
-              <SafeImage
-                rawPath={item.poster_path}
-                tmdbSize="w185"
-                alt="Miniatura"
-                fill
-                className="object-cover"
-              />
-            </button>
-          );
-        })}
-      </div>
+      {/* Interactive Thumbnails Dock (Desktop & Tablets) */}
+      {heroItems.length > 1 && (
+        <div className="hidden md:flex flex-col gap-2 absolute bottom-6 md:bottom-8 right-6 md:right-12 z-30 bg-black/65 dark:bg-black/75 p-3 rounded-2xl backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl">
+          {/* Header indicator */}
+          <div className="flex items-center justify-between px-1 text-[11px] font-bold text-gray-200">
+            <span className="flex items-center gap-1.5 text-[#6FCFEB]">
+              <span className="w-2 h-2 rounded-full bg-[#6FCFEB] animate-pulse" />
+              Destacados
+            </span>
+            <span className="text-gray-400 text-[10px] font-mono">
+              {currentIndex + 1} / {heroItems.length}
+            </span>
+          </div>
+
+          {/* Cards Row */}
+          <div className="flex items-end gap-2.5">
+            {heroItems.map((item, idx) => {
+              const isActive = idx === currentIndex;
+              const itemTitle = item.title || item.name || `Título ${idx + 1}`;
+              const imagePath = item.poster_path || item.backdrop_path;
+
+              return (
+                <button
+                  key={item.id || idx}
+                  onClick={() => setCurrentIndex(idx)}
+                  className={`group relative rounded-xl overflow-hidden transition-all duration-300 text-left cursor-pointer flex-shrink-0 bg-slate-800 ${
+                    isActive
+                      ? 'w-[76px] h-[112px] ring-2 ring-[#6FCFEB] ring-offset-2 ring-offset-black/70 shadow-[0_0_20px_rgba(111,207,235,0.7)] scale-105 z-10'
+                      : 'w-[54px] h-[80px] opacity-65 hover:opacity-100 hover:scale-105 border border-white/20 hover:border-white/60'
+                  }`}
+                  title={itemTitle}
+                >
+                  {/* Poster Thumbnail */}
+                  <SafeImage
+                    rawPath={imagePath}
+                    tmdbSize="w185"
+                    alt={itemTitle}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+
+                  {/* Gradient shadow */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20" />
+
+                  {/* Active Slide Indicator & 7s Progress Bar */}
+                  {isActive && (
+                    <>
+                      <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-pastel-gradient text-slate-950 text-[8px] font-black uppercase shadow">
+                        Viendo
+                      </div>
+                      <motion.div
+                        key={currentIndex}
+                        initial={{ width: '0%' }}
+                        animate={{ width: '100%' }}
+                        transition={{ duration: 7, ease: 'linear' }}
+                        className="absolute bottom-0 inset-x-0 h-1 bg-gradient-to-r from-[#6FCFEB] via-[#F3B2DB] to-[#F3EFA1]"
+                      />
+                    </>
+                  )}
+
+                  {/* Title tooltip on hover */}
+                  <div className="absolute bottom-1 inset-x-1 opacity-0 group-hover:opacity-100 transition-opacity text-[8px] text-white font-bold truncate">
+                    {itemTitle}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
