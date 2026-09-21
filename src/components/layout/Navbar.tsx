@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
-import { Search, Bell, Menu, X, Dices, Star, Film, Tv, Flame, Sparkles } from 'lucide-react';
+import { Search, Bell, Menu, X, Dices, Star, Film, Tv, Flame, Sparkles, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const SUGGESTIONS = [
@@ -17,7 +17,6 @@ const SUGGESTIONS = [
   "Busca 'Spider-Man' o películas de acción"
 ];
 
-// Removed 'Explorar' as requested by the user
 const NAV_LINKS = [
   { name: 'Inicio', path: '/', icon: Film },
   { name: 'Películas', path: '/peliculas', icon: Film },
@@ -96,13 +95,17 @@ export default function Navbar() {
 
   // Click outside search
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
+    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
       if (searchBoxRef.current && !searchBoxRef.current.contains(e.target as Node)) {
         setShowDropdown(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
   }, []);
 
   // Debounced live search
@@ -163,10 +166,10 @@ export default function Navbar() {
             : 'bg-gradient-to-b from-[#000814]/90 via-[#000814]/40 to-transparent py-4'
         }`}
       >
-        <div className="container mx-auto px-4 md:px-8 flex items-center justify-between gap-4">
+        <div className="container mx-auto px-4 md:px-8 flex items-center justify-between gap-3 md:gap-4">
           
           {/* Brand Logo */}
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4 lg:gap-6 flex-shrink-0">
             <Link href="/" className="flex items-center gap-2 group">
               <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-400 flex items-center justify-center font-black text-white shadow-lg shadow-blue-500/30 group-hover:scale-105 transition-transform">
                 K
@@ -184,7 +187,7 @@ export default function Navbar() {
           </div>
 
           {/* Navigation Links Desktop */}
-          <nav className="hidden lg:flex items-center gap-1 bg-[#020b18]/60 p-1 rounded-full border border-gray-800/60 backdrop-blur-md">
+          <nav className="hidden lg:flex items-center gap-1 bg-[#020b18]/60 p-1 rounded-full border border-gray-800/60 backdrop-blur-md flex-shrink-0">
             {NAV_LINKS.map((link) => {
               const Icon = link.icon;
               const isActive = pathname === link.path;
@@ -205,8 +208,8 @@ export default function Navbar() {
             })}
           </nav>
 
-          {/* Desktop Search Bar with Animated Placeholder & Dropdown */}
-          <div ref={searchBoxRef} className="hidden md:block relative flex-1 max-w-xs lg:max-w-md">
+          {/* Tablet & Desktop Search Bar with Animated Placeholder & Dropdown */}
+          <div ref={searchBoxRef} className="hidden md:block relative flex-1 max-w-sm lg:max-w-md xl:max-w-lg mx-2">
             <form onSubmit={handleSearchSubmit} className="relative">
               <input
                 ref={searchInputRef}
@@ -219,11 +222,16 @@ export default function Navbar() {
               />
               <button
                 type="submit"
-                className="absolute left-3 top-2.5 text-gray-400 hover:text-blue-400 transition-colors"
+                className="absolute left-3 top-2.5 text-gray-400 hover:text-blue-400 transition-colors cursor-pointer"
                 title="Buscar"
               >
                 <Search className="w-4 h-4" />
               </button>
+              {loading && (
+                <div className="absolute right-9 top-2.5">
+                  <Loader2 className="w-4 h-4 text-blue-400 animate-spin" />
+                </div>
+              )}
               {query && (
                 <button
                   type="button"
@@ -232,75 +240,78 @@ export default function Navbar() {
                     setShowDropdown(false);
                     if (searchInputRef.current) searchInputRef.current.focus();
                   }}
-                  className="absolute right-3 top-2.5 text-gray-400 hover:text-white"
+                  className="absolute right-3 top-2.5 text-gray-400 hover:text-white cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
               )}
             </form>
 
-            {/* Instant Search Dropdown */}
+            {/* Instant Search Dropdown (Adapted for Desktop & iPad screens) */}
             <AnimatePresence>
               {showDropdown && results.length > 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 10 }}
-                  className="absolute top-full mt-2 w-full bg-[#051226]/98 backdrop-blur-xl border border-blue-900/50 rounded-2xl shadow-2xl overflow-hidden z-50 divide-y divide-gray-800/60"
+                  className="absolute top-full mt-2 w-[420px] md:w-[480px] lg:w-[520px] max-w-[90vw] right-0 bg-[#051226]/98 backdrop-blur-xl border border-blue-900/50 rounded-2xl shadow-2xl overflow-hidden z-50 divide-y divide-gray-800/60"
                 >
-                  <div className="p-2 max-h-96 overflow-y-auto space-y-1">
+                  <div className="p-2 max-h-[70vh] overflow-y-auto space-y-1 scrollbar-thin">
                     {results.map((item: any) => {
                       const isMovie = item.media_type === 'movie' || !item.name;
                       const title = isMovie ? item.title : item.name;
                       const link = `/ver/${isMovie ? 'pelicula' : 'serie'}/${item.id}`;
                       const year = (item.release_date || item.first_air_date || '').substring(0, 4);
+                      const poster = item.poster_path
+                        ? `https://image.tmdb.org/t/p/w185${item.poster_path}`
+                        : '/placeholder-poster.svg';
 
                       return (
                         <Link
                           key={item.id}
                           href={link}
                           onClick={() => setShowDropdown(false)}
-                          className="flex items-center gap-3 p-2 rounded-xl hover:bg-blue-600/20 transition-colors group cursor-pointer"
+                          className="flex items-start gap-3.5 p-2.5 rounded-xl hover:bg-blue-600/20 transition-colors group cursor-pointer"
                         >
-                          <div className="relative w-10 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-gray-900 border border-gray-800">
-                            {item.poster_path ? (
-                              <Image
-                                src={`https://image.tmdb.org/t/p/w92${item.poster_path}`}
-                                alt={title || 'Póster'}
-                                fill
-                                className="object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-500">
-                                Sin foto
-                              </div>
-                            )}
+                          <div className="relative w-12 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-gray-900 border border-gray-800">
+                            <Image
+                              src={poster}
+                              alt={title || 'Póster'}
+                              fill
+                              unoptimized
+                              className="object-cover"
+                            />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h4 className="text-sm font-semibold text-white group-hover:text-blue-400 truncate">
+                            <h4 className="text-sm font-bold text-white group-hover:text-blue-400 line-clamp-1">
                               {title}
                             </h4>
-                            <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-400">
-                              <span className="capitalize px-1.5 py-0.5 rounded bg-blue-950/60 text-blue-300 text-[10px]">
+                            <div className="flex items-center gap-2 mt-1 text-xs text-gray-400">
+                              <span className="capitalize px-2 py-0.5 rounded-full bg-blue-950/80 text-blue-300 text-[10px] font-semibold border border-blue-800/40">
                                 {isMovie ? 'Película' : 'Serie'}
                               </span>
-                              {year && <span>{year}</span>}
+                              {year && <span className="text-gray-300 text-xs">{year}</span>}
                               {item.vote_average ? (
-                                <span className="flex items-center gap-0.5 text-yellow-400">
+                                <span className="flex items-center gap-1 text-yellow-400 font-bold text-xs">
                                   <Star className="w-3 h-3 fill-current" />
                                   {Number(item.vote_average).toFixed(1)}
                                 </span>
                               ) : null}
                             </div>
+                            {item.overview && (
+                              <p className="text-[11px] text-gray-400 line-clamp-1 mt-1 font-light leading-relaxed">
+                                {item.overview}
+                              </p>
+                            )}
                           </div>
                         </Link>
                       );
                     })}
                   </div>
-                  <div className="p-2 text-center bg-blue-950/30">
+                  <div className="p-2.5 text-center bg-blue-950/40 border-t border-gray-800">
                     <button
                       onClick={handleSearchSubmit}
-                      className="text-xs text-blue-400 hover:text-blue-300 font-medium cursor-pointer"
+                      className="text-xs text-blue-400 hover:text-blue-300 font-bold cursor-pointer"
                     >
                       Ver todos los resultados para &quot;{query}&quot; →
                     </button>
@@ -311,7 +322,7 @@ export default function Navbar() {
           </div>
 
           {/* Action Buttons Right */}
-          <div className="flex items-center gap-2 md:gap-3">
+          <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
             
             {/* Surprise Me (Random Movie) */}
             <button
@@ -345,7 +356,7 @@ export default function Navbar() {
                 <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full"></span>
               </button>
 
-              {/* Notifications Dropdown (Telegram removed) */}
+              {/* Notifications Dropdown */}
               <AnimatePresence>
                 {notificationsOpen && (
                   <motion.div
@@ -366,7 +377,7 @@ export default function Navbar() {
                         🎉 <b>¡Plataforma 100% activa!</b> Disfruta de películas y series en calidad 1080p y 4K con audio en Español Latino.
                       </p>
                       <p className="text-gray-400">
-                        Si algún video tarda en iniciar, utiliza las fuentes de <b>NSRPLAY</b> o <b>MULTIEMBED</b> en la parte superior del reproductor.
+                        Ahora puedes usar el botón de <b>Pantalla Completa</b> para disfrutar en todo el monitor o teléfono móvil sin barras.
                       </p>
                     </div>
                   </motion.div>
@@ -416,99 +427,137 @@ export default function Navbar() {
         </AnimatePresence>
       </header>
 
-      {/* Mobile Fullscreen Search Overlay */}
+      {/* Mobile Fullscreen Search Overlay (Optimized for Phones & iPads) */}
       <AnimatePresence>
         {searchModalOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-[#000814]/98 backdrop-blur-2xl p-4 md:hidden flex flex-col"
+            className="fixed inset-0 z-50 bg-[#000814]/98 backdrop-blur-2xl p-4 md:hidden flex flex-col overflow-hidden"
           >
-            <div className="flex items-center justify-between pb-4 border-b border-gray-800">
-              <span className="text-sm font-bold text-gray-300">Buscar en el catálogo</span>
+            {/* Header del Modal */}
+            <div className="flex items-center justify-between pb-3 border-b border-gray-800">
+              <span className="text-sm font-bold text-white flex items-center gap-2">
+                <Search className="w-4 h-4 text-blue-500" />
+                <span>Buscar en KEZARSTREAM</span>
+              </span>
               <button
                 onClick={() => setSearchModalOpen(false)}
-                className="p-1 rounded-full text-gray-400 hover:text-white cursor-pointer"
+                className="p-1.5 rounded-full bg-gray-900 text-gray-400 hover:text-white cursor-pointer"
               >
-                <X className="w-6 h-6" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSearchSubmit} className="mt-4 relative">
+            {/* Input de Búsqueda Móvil */}
+            <form onSubmit={handleSearchSubmit} className="mt-3 relative">
               <input
                 type="text"
                 autoFocus
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Película, serie..."
-                className="w-full bg-[#051226] text-white text-base pl-11 pr-10 py-3.5 rounded-2xl border border-blue-900/50 focus:border-blue-500 outline-none cursor-text"
+                placeholder="Escribe el nombre de la película o serie..."
+                className="w-full bg-[#051226] text-white text-sm pl-11 pr-10 py-3 rounded-2xl border border-blue-900/50 focus:border-blue-500 outline-none cursor-text shadow-inner"
               />
-              <button type="submit" className="absolute left-3.5 top-4 text-gray-400">
-                <Search className="w-5 h-5" />
+              <button type="submit" className="absolute left-3.5 top-3.5 text-gray-400">
+                <Search className="w-4 h-4" />
               </button>
+              {loading && (
+                <div className="absolute right-10 top-3.5">
+                  <Loader2 className="w-4 h-4 text-blue-400 animate-spin" />
+                </div>
+              )}
               {query && (
                 <button
                   type="button"
                   onClick={() => setQuery('')}
-                  className="absolute right-3.5 top-3.5 text-gray-400 cursor-pointer"
+                  className="absolute right-3.5 top-3 text-gray-400 hover:text-white cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
               )}
             </form>
 
-            {/* Quick search chips */}
-            <div className="mt-4">
-              <p className="text-xs text-gray-400 mb-2 font-medium">Búsquedas populares:</p>
-              <div className="flex flex-wrap gap-2">
-                {['Inception', 'Stranger Things', 'Breaking Bad', 'Demon Slayer', 'Spider-Man', 'Resident Evil'].map((item) => (
-                  <button
-                    key={item}
-                    onClick={() => {
-                      setQuery(item);
-                    }}
-                    className="px-3 py-1.5 rounded-full bg-blue-950/40 border border-blue-900/40 text-xs text-blue-300 hover:bg-blue-900/50 cursor-pointer"
-                  >
-                    {item}
-                  </button>
-                ))}
+            {/* Chips de sugerencias rápidas cuando no hay búsqueda activa */}
+            {query.trim().length < 2 && (
+              <div className="mt-4">
+                <p className="text-xs text-gray-400 mb-2 font-medium">Búsquedas populares hoy:</p>
+                <div className="flex flex-wrap gap-2">
+                  {['Inception', 'Stranger Things', 'Breaking Bad', 'Demon Slayer', 'Spider-Man', 'IntensaMente 2'].map((item) => (
+                    <button
+                      key={item}
+                      onClick={() => setQuery(item)}
+                      className="px-3 py-1.5 rounded-full bg-blue-950/50 border border-blue-900/40 text-xs text-blue-300 hover:bg-blue-900/60 cursor-pointer"
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* Search results in mobile */}
-            <div className="flex-1 mt-4 overflow-y-auto divide-y divide-gray-800">
+            {/* Lista de resultados adaptada a pantalla completa móvil */}
+            <div className="flex-1 mt-4 overflow-y-auto divide-y divide-gray-800/80 pb-20 scrollbar-thin">
               {results.map((item: any) => {
                 const isMovie = item.media_type === 'movie' || !item.name;
                 const title = isMovie ? item.title : item.name;
                 const link = `/ver/${isMovie ? 'pelicula' : 'serie'}/${item.id}`;
+                const year = (item.release_date || item.first_air_date || '').substring(0, 4);
+                const poster = item.poster_path
+                  ? `https://image.tmdb.org/t/p/w185${item.poster_path}`
+                  : '/placeholder-poster.svg';
 
                 return (
                   <Link
                     key={item.id}
                     href={link}
                     onClick={() => setSearchModalOpen(false)}
-                    className="flex items-center gap-3 py-3"
+                    className="flex items-start gap-3.5 py-3 hover:bg-white/5 px-2 rounded-xl transition-colors cursor-pointer"
                   >
-                    <div className="relative w-12 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-gray-900">
-                      {item.poster_path && (
-                        <Image
-                          src={`https://image.tmdb.org/t/p/w92${item.poster_path}`}
-                          alt={title || 'Póster'}
-                          fill
-                          className="object-cover"
-                        />
-                      )}
+                    <div className="relative w-14 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-gray-900 border border-gray-800">
+                      <Image
+                        src={poster}
+                        alt={title || 'Póster'}
+                        fill
+                        unoptimized
+                        className="object-cover"
+                      />
                     </div>
-                    <div>
-                      <h4 className="text-sm font-semibold text-white">{title}</h4>
-                      <p className="text-xs text-gray-400 mt-0.5">
-                        {isMovie ? 'Película' : 'Serie'} • {item.vote_average?.toFixed(1) || 'NR'} ★
-                      </p>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-bold text-white line-clamp-1">{title}</h4>
+                      <div className="flex items-center gap-2 mt-1 text-xs text-gray-400">
+                        <span className="capitalize px-2 py-0.5 rounded-full bg-blue-950/80 text-blue-300 text-[10px] font-semibold border border-blue-800/40">
+                          {isMovie ? 'Película' : 'Serie'}
+                        </span>
+                        {year && <span>{year}</span>}
+                        {item.vote_average ? (
+                          <span className="flex items-center gap-1 text-yellow-400 font-bold">
+                            <Star className="w-3 h-3 fill-current" />
+                            {Number(item.vote_average).toFixed(1)}
+                          </span>
+                        ) : null}
+                      </div>
+                      {item.overview && (
+                        <p className="text-xs text-gray-400 line-clamp-2 mt-1 font-light">
+                          {item.overview}
+                        </p>
+                      )}
                     </div>
                   </Link>
                 );
               })}
+
+              {results.length > 0 && (
+                <div className="pt-4 pb-6">
+                  <button
+                    onClick={handleSearchSubmit}
+                    className="w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-xl text-xs font-bold text-white shadow-lg transition-all cursor-pointer text-center"
+                  >
+                    Ver todos los resultados para &quot;{query}&quot; →
+                  </button>
+                </div>
+              )}
             </div>
           </motion.div>
         )}

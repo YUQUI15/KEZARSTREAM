@@ -1,8 +1,8 @@
 "use client";
 
+import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
 import { Play } from 'lucide-react';
 import { MediaItem, Movie, TVShow } from '@/types/tmdb';
 
@@ -12,23 +12,26 @@ interface TopCardProps {
 }
 
 export default function TopCard({ media, index }: TopCardProps) {
+  const [imgError, setImgError] = useState(false);
+
   if (!media) return null;
 
   const isMovie = media.media_type === 'movie' || (!media.name && !!media.title);
-  const title = isMovie ? media.title : media.name;
+  const title = (isMovie ? media.title : media.name) || 'Título';
   const link = `/ver/${isMovie ? 'pelicula' : 'serie'}/${media.id}`;
-  const posterUrl = media.poster_path
-    ? `https://image.tmdb.org/t/p/w500${media.poster_path}`
-    : '/placeholder-poster.png';
+  
+  const posterUrl = imgError
+    ? '/placeholder-poster.svg'
+    : media.poster_path
+    ? `https://image.tmdb.org/t/p/w342${media.poster_path}`
+    : media.backdrop_path
+    ? `https://image.tmdb.org/t/p/w342${media.backdrop_path}`
+    : '/placeholder-poster.svg';
 
   const ranking = index + 1;
 
   return (
-    <motion.div
-      whileHover={{ scale: 1.04 }}
-      transition={{ duration: 0.2 }}
-      className="relative flex-shrink-0 w-[210px] md:w-[240px] h-[270px] md:h-[300px] group mr-4"
-    >
+    <div className="relative flex-shrink-0 w-[210px] md:w-[240px] h-[270px] md:h-[300px] group mr-4 transition-transform duration-300 ease-out hover:scale-[1.03] will-change-transform">
       <Link href={link} className="flex h-full w-full items-end relative">
         {/* Giant Ranking Number */}
         <div
@@ -48,7 +51,9 @@ export default function TopCard({ media, index }: TopCardProps) {
             src={posterUrl}
             alt={title || `Top ${ranking}`}
             fill
+            unoptimized
             sizes="165px"
+            onError={() => setImgError(true)}
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
 
@@ -73,6 +78,6 @@ export default function TopCard({ media, index }: TopCardProps) {
           </div>
         </div>
       </Link>
-    </motion.div>
+    </div>
   );
 }

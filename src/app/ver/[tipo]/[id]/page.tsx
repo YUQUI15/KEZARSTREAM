@@ -115,6 +115,8 @@ export default async function WatchPage({ params, searchParams }: PageProps) {
             season={season}
             episode={episode}
             title={title}
+            backdropUrl={backdropUrl}
+            posterUrl={posterUrl}
           />
         </div>
 

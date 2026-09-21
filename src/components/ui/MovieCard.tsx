@@ -1,8 +1,8 @@
 "use client";
 
+import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
 import { Play } from 'lucide-react';
 import { MediaItem, Movie, TVShow } from '@/types/tmdb';
 
@@ -11,14 +11,21 @@ interface MovieCardProps {
 }
 
 export default function MovieCard({ media }: MovieCardProps) {
+  const [imgError, setImgError] = useState(false);
+
   if (!media) return null;
 
   const isMovie = media.media_type === 'movie' || (!media.name && !!media.title);
-  const title = isMovie ? media.title : media.name;
+  const title = (isMovie ? media.title : media.name) || 'Título no disponible';
   const link = `/ver/${isMovie ? 'pelicula' : 'serie'}/${media.id}`;
-  const posterUrl = media.poster_path
-    ? `https://image.tmdb.org/t/p/w500${media.poster_path}`
-    : '/placeholder-poster.png';
+  
+  const posterUrl = imgError
+    ? '/placeholder-poster.svg'
+    : media.poster_path
+    ? `https://image.tmdb.org/t/p/w342${media.poster_path}`
+    : media.backdrop_path
+    ? `https://image.tmdb.org/t/p/w342${media.backdrop_path}`
+    : '/placeholder-poster.svg';
 
   const rawRating = Number(media.vote_average) || 0;
   const ratingFormatted = rawRating > 0 ? rawRating.toFixed(1) : 'NR';
@@ -29,24 +36,25 @@ export default function MovieCard({ media }: MovieCardProps) {
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
-  let strokeColor = '#22c55e'; // Green
-  if (rawRating < 7 && rawRating >= 5) strokeColor = '#eab308'; // Yellow
-  if (rawRating > 0 && rawRating < 5) strokeColor = '#ef4444'; // Red
+  let strokeColor = '#22c55e'; // Verde
+  if (rawRating < 7 && rawRating >= 5) strokeColor = '#eab308'; // Amarillo
+  if (rawRating > 0 && rawRating < 5) strokeColor = '#ef4444'; // Rojo
 
   const year = (media.release_date || media.first_air_date || '').substring(0, 4);
 
   return (
-    <motion.div
-      whileHover={{ y: -6, scale: 1.03 }}
-      transition={{ duration: 0.25 }}
-      className="group relative flex flex-col"
-    >
-      <Link href={link} className="block relative w-full aspect-[2/3] rounded-2xl overflow-hidden bg-[#051226] border border-blue-950/60 shadow-xl group-hover:shadow-[0_0_25px_rgba(59,130,246,0.45)] group-hover:border-blue-500/50 transition-all duration-300">
+    <div className="group relative flex flex-col transition-all duration-300 ease-out hover:-translate-y-1.5 hover:scale-[1.03] will-change-transform">
+      <Link
+        href={link}
+        className="block relative w-full aspect-[2/3] rounded-2xl overflow-hidden bg-[#051226] border border-blue-950/60 shadow-xl group-hover:shadow-[0_0_25px_rgba(59,130,246,0.45)] group-hover:border-blue-500/50 transition-all duration-300"
+      >
         <Image
           src={posterUrl}
-          alt={title || 'Póster'}
+          alt={title}
           fill
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+          unoptimized
+          sizes="(max-width: 640px) 140px, 180px"
+          onError={() => setImgError(true)}
           className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
 
@@ -104,6 +112,6 @@ export default function MovieCard({ media }: MovieCardProps) {
           </div>
         </div>
       </Link>
-    </motion.div>
+    </div>
   );
 }

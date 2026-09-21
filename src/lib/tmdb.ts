@@ -12,7 +12,9 @@ type FetchOptions = {
 async function fetchTMDB<T>({ endpoint, params = {}, revalidate = 3600 }: FetchOptions): Promise<T> {
   const url = new URL(`${TMDB_BASE_URL}${endpoint}`);
   url.searchParams.append('api_key', API_KEY);
-  url.searchParams.append('language', 'es-MX');
+  if (!params.language) {
+    url.searchParams.append('language', 'es-MX');
+  }
   
   Object.entries(params).forEach(([key, value]) => {
     url.searchParams.append(key, value);
@@ -131,7 +133,29 @@ export async function getMovieDetails(id: string): Promise<DetailedMovie | null>
       endpoint: `/movie/${id}`,
       params: { append_to_response: 'credits,videos,similar' },
     });
-    return data && data.id ? data : null;
+    if (!data || !data.id) return null;
+
+    if (!data.overview || data.overview.trim().length === 0) {
+      // Fallback 1: Español España (es-ES)
+      const esFallback = await fetchTMDB<DetailedMovie>({
+        endpoint: `/movie/${id}`,
+        params: { language: 'es-ES' },
+      });
+      if (esFallback && esFallback.overview && esFallback.overview.trim().length > 0) {
+        data.overview = esFallback.overview;
+      } else {
+        // Fallback 2: Inglés (en-US)
+        const enFallback = await fetchTMDB<DetailedMovie>({
+          endpoint: `/movie/${id}`,
+          params: { language: 'en-US' },
+        });
+        if (enFallback && enFallback.overview && enFallback.overview.trim().length > 0) {
+          data.overview = enFallback.overview;
+        }
+      }
+    }
+
+    return data;
   } catch {
     return null;
   }
@@ -143,7 +167,29 @@ export async function getTVDetails(id: string): Promise<DetailedTVShow | null> {
       endpoint: `/tv/${id}`,
       params: { append_to_response: 'credits,videos,similar' },
     });
-    return data && data.id ? data : null;
+    if (!data || !data.id) return null;
+
+    if (!data.overview || data.overview.trim().length === 0) {
+      // Fallback 1: Español España (es-ES)
+      const esFallback = await fetchTMDB<DetailedTVShow>({
+        endpoint: `/tv/${id}`,
+        params: { language: 'es-ES' },
+      });
+      if (esFallback && esFallback.overview && esFallback.overview.trim().length > 0) {
+        data.overview = esFallback.overview;
+      } else {
+        // Fallback 2: Inglés (en-US)
+        const enFallback = await fetchTMDB<DetailedTVShow>({
+          endpoint: `/tv/${id}`,
+          params: { language: 'en-US' },
+        });
+        if (enFallback && enFallback.overview && enFallback.overview.trim().length > 0) {
+          data.overview = enFallback.overview;
+        }
+      }
+    }
+
+    return data;
   } catch {
     return null;
   }
