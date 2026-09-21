@@ -35,11 +35,11 @@ export default function SeasonSelector({
   return (
     <div className="mt-8 font-['Lexend_Deca']">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xl font-bold text-white">Episodios</h3>
+        <h3 className="text-xl font-bold text-slate-900 dark:text-white">Episodios</h3>
         <select
           value={selectedSeason}
           onChange={(e) => setSelectedSeason(Number(e.target.value))}
-          className="bg-[#000814] text-white border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500"
+          className="bg-white dark:bg-[#000814] text-slate-900 dark:text-white border border-slate-200 dark:border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:border-pastel-lavender dark:focus:border-pastel-cyan transition-colors"
         >
           {seasons.map((season) => (
             <option key={season.season_number} value={season.season_number}>
@@ -57,20 +57,20 @@ export default function SeasonSelector({
               <Link
                 key={ep}
                 href={`/ver/serie/${tvId}?season=${selectedSeason}&episode=${ep}`}
-                className={`flex flex-col items-center justify-center py-3 px-2 rounded-lg transition-colors border ${
+                className={`flex flex-col items-center justify-center py-3 px-2 rounded-xl transition-all border ${
                   isActive
-                    ? 'bg-blue-600 border-blue-500 text-white font-bold'
-                    : 'bg-gray-900 border-gray-800 text-gray-300 hover:bg-gray-800 hover:text-white'
+                    ? 'bg-gradient-to-r from-[#FEAEBB] via-[#F3B2DB] to-[#C19ADE] text-slate-950 font-bold shadow-pastel-pink border-transparent'
+                    : 'bg-white/80 dark:bg-gray-900/80 border-slate-200 dark:border-gray-800 text-slate-700 dark:text-gray-300 hover:border-pastel-lavender/60 hover:text-slate-950 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-gray-800'
                 }`}
               >
-                <span className="text-xs uppercase tracking-wider mb-1">Episodio</span>
-                <span className="text-2xl font-semibold">{ep}</span>
+                <span className="text-[10px] uppercase tracking-wider mb-1 opacity-75">Episodio</span>
+                <span className="text-2xl font-black">{ep}</span>
               </Link>
             );
           })}
         </div>
       ) : (
-        <p className="text-gray-500 italic">No hay episodios disponibles para esta temporada.</p>
+        <p className="text-slate-500 dark:text-gray-500 italic">No hay episodios disponibles para esta temporada.</p>
       )}
     </div>
   );

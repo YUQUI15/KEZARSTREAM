@@ -45,7 +45,7 @@ export default function HeroSlider({ items }: HeroSliderProps) {
   };
 
   return (
-    <div className="relative w-full h-[75vh] md:h-[88vh] overflow-hidden bg-[#000814] select-none">
+    <div className="relative w-full h-[75vh] md:h-[88vh] overflow-hidden bg-slate-900 dark:bg-[#000814] select-none">
       {/* Background with crossfade */}
       <AnimatePresence mode="wait">
         <motion.div
@@ -68,10 +68,10 @@ export default function HeroSlider({ items }: HeroSliderProps) {
             />
           )}
 
-          {/* Gradients matching Modocine */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#000814] via-[#000814]/60 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#000814] via-[#000814]/85 md:via-[#000814]/40 to-transparent" />
-          <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-[#000814] to-transparent" />
+          {/* Gradients adaptados a modo claro (f8fafd) y oscuro (000814) */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#f8fafd] dark:from-[#000814] via-[#000814]/60 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#000814]/90 via-[#000814]/60 md:via-[#000814]/30 to-transparent" />
+          <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-[#f8fafd] dark:from-[#000814] to-transparent" />
         </motion.div>
       </AnimatePresence>
 
@@ -84,27 +84,27 @@ export default function HeroSlider({ items }: HeroSliderProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.5 }}
           >
-            {/* Badges */}
+            {/* Badges con tonos pastel */}
             <div className="flex flex-wrap items-center gap-2.5 mb-3">
-              <span className="flex items-center gap-1 bg-blue-600/90 text-white text-xs font-black uppercase px-3 py-1 rounded-full shadow-lg shadow-blue-600/30">
-                <Flame className="w-3.5 h-3.5" />
+              <span className="flex items-center gap-1 bg-pastel-gradient text-slate-950 text-xs font-black uppercase px-3 py-1 rounded-full shadow-lg shadow-pastel-blue/30">
+                <Flame className="w-3.5 h-3.5 text-slate-950" />
                 <span>{isMovie ? 'PELÍCULA DESTACADA' : 'SERIE DESTACADA'}</span>
               </span>
 
               {rating !== '0.0' && (
-                <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-yellow-400 border border-gray-800">
+                <div className="flex items-center gap-1.5 bg-black/50 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-[#F3EFA1] border border-white/20">
                   <Star className="w-3.5 h-3.5 fill-current" />
                   <span>{rating} TMDB</span>
                 </div>
               )}
 
               {year && (
-                <span className="bg-black/40 backdrop-blur-md text-gray-300 text-xs px-2.5 py-1 rounded-full border border-gray-800">
+                <span className="bg-black/40 backdrop-blur-md text-white text-xs px-2.5 py-1 rounded-full border border-white/20">
                   {year}
                 </span>
               )}
 
-              <span className="bg-emerald-500/20 text-emerald-400 text-xs font-semibold px-2.5 py-1 rounded-full border border-emerald-500/40">
+              <span className="bg-[#99E6D8]/30 text-white text-xs font-bold px-2.5 py-1 rounded-full border border-[#99E6D8]/50">
                 Full HD 1080p
               </span>
             </div>
@@ -115,7 +115,7 @@ export default function HeroSlider({ items }: HeroSliderProps) {
             </h1>
 
             {/* Overview */}
-            <p className="text-gray-300 text-sm md:text-base mb-8 line-clamp-3 md:line-clamp-4 max-w-2xl drop-shadow leading-relaxed font-light">
+            <p className="text-gray-200 text-sm md:text-base mb-8 line-clamp-3 md:line-clamp-4 max-w-2xl drop-shadow leading-relaxed font-normal">
               {activeItem.overview || 'Disfruta de esta increíble producción en audio latino, castellano y subtitulado sin interrupciones en KEZARSTREAM.'}
             </p>
 
@@ -123,7 +123,7 @@ export default function HeroSlider({ items }: HeroSliderProps) {
             <div className="flex flex-wrap items-center gap-4">
               <Link
                 href={link}
-                className="flex items-center gap-2.5 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white px-7 py-3.5 rounded-full font-bold text-sm md:text-base transition-all shadow-xl shadow-blue-600/40 hover:shadow-blue-500/60 hover:-translate-y-0.5 active:translate-y-0"
+                className="flex items-center gap-2.5 bg-pastel-gradient text-slate-950 px-7 py-3.5 rounded-full font-black text-sm md:text-base transition-all shadow-xl shadow-pastel-blue/40 hover:shadow-pastel-purple hover:scale-105 active:scale-95"
               >
                 <Play className="w-5 h-5 fill-current" />
                 <span>Ver ahora</span>
@@ -131,9 +131,9 @@ export default function HeroSlider({ items }: HeroSliderProps) {
 
               <Link
                 href={link}
-                className="flex items-center gap-2 bg-gray-900/80 hover:bg-gray-800 text-gray-200 hover:text-white px-6 py-3.5 rounded-full font-semibold text-sm md:text-base backdrop-blur-md transition-all border border-gray-700/80 hover:border-gray-500"
+                className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white px-6 py-3.5 rounded-full font-bold text-sm md:text-base backdrop-blur-md transition-all border border-white/30 hover:border-white/60"
               >
-                <Info className="w-5 h-5 text-blue-400" />
+                <Info className="w-5 h-5 text-[#6FCFEB]" />
                 <span>Detalles y Servidores</span>
               </Link>
             </div>
@@ -152,7 +152,7 @@ export default function HeroSlider({ items }: HeroSliderProps) {
         </button>
         <button
           onClick={nextSlide}
-          className="pointer-events-auto w-11 h-11 rounded-full bg-black/50 hover:bg-blue-600 text-white flex items-center justify-center backdrop-blur-md border border-gray-800 hover:border-blue-500 transition-all hover:scale-110 active:scale-95"
+          className="pointer-events-auto w-11 h-11 rounded-full bg-black/50 hover:bg-pastel-gradient text-white hover:text-slate-950 flex items-center justify-center backdrop-blur-md border border-white/20 transition-all hover:scale-110 active:scale-95"
           title="Siguiente"
         >
           <ChevronRight className="w-6 h-6" />
@@ -160,7 +160,7 @@ export default function HeroSlider({ items }: HeroSliderProps) {
       </div>
 
       {/* Interactive Thumbnails Selector on Desktop Bottom-Right */}
-      <div className="hidden lg:flex absolute bottom-8 right-12 z-30 items-end gap-3 bg-black/40 p-2 rounded-2xl backdrop-blur-md border border-gray-800/80">
+      <div className="hidden lg:flex absolute bottom-8 right-12 z-30 items-end gap-3 bg-black/50 p-2 rounded-2xl backdrop-blur-md border border-white/20">
         {items.slice(0, 5).map((item, idx) => {
           const isActive = idx === currentIndex;
           return (
@@ -169,7 +169,7 @@ export default function HeroSlider({ items }: HeroSliderProps) {
               onClick={() => setCurrentIndex(idx)}
               className={`relative rounded-xl overflow-hidden transition-all duration-300 ${
                 isActive
-                  ? 'w-16 h-24 ring-2 ring-blue-500 shadow-xl shadow-blue-500/40 scale-105'
+                  ? 'w-16 h-24 ring-2 ring-[#6FCFEB] shadow-xl shadow-cyan-500/40 scale-105'
                   : 'w-12 h-18 opacity-50 hover:opacity-100 hover:scale-100'
               }`}
             >

@@ -47,7 +47,7 @@ export default async function Home() {
   ]);
 
   return (
-    <main className="min-h-screen bg-[#000814] text-white pb-16">
+    <main className="min-h-screen bg-[#f8fafd] dark:bg-[#000814] text-slate-900 dark:text-white pb-16 transition-colors duration-300">
       {/* Hero Slider with Autoplay & featured titles */}
       <HeroSlider items={trendingDay.slice(0, 7)} />
 
@@ -64,14 +64,14 @@ export default async function Home() {
         {/* 2. TOP 10 Películas Hoy */}
         <div className="py-2">
           <div className="flex items-center gap-3 mb-2 px-4 md:px-8">
-            <span className="text-4xl md:text-5xl font-black tracking-tighter text-blue-500">
+            <span className="text-4xl md:text-5xl font-black tracking-tighter text-pastel-gradient drop-shadow-sm">
               TOP 10
             </span>
-            <div className="border-l-2 border-gray-700 pl-3">
-              <h2 className="text-lg md:text-xl font-bold text-white uppercase tracking-wider">
+            <div className="border-l-2 border-slate-300 dark:border-gray-700 pl-3">
+              <h2 className="text-lg md:text-xl font-black text-slate-900 dark:text-white uppercase tracking-wider">
                 Películas en Tendencia Hoy
               </h2>
-              <p className="text-xs text-gray-400">Lo más visto por la comunidad hoy</p>
+              <p className="text-xs text-slate-500 dark:text-gray-400">Lo más visto por la comunidad hoy</p>
             </div>
           </div>
           <Carousel
@@ -99,14 +99,14 @@ export default async function Home() {
         {/* 5. TOP 10 Series Hoy */}
         <div className="py-2">
           <div className="flex items-center gap-3 mb-2 px-4 md:px-8">
-            <span className="text-4xl md:text-5xl font-black tracking-tighter text-blue-500">
+            <span className="text-4xl md:text-5xl font-black tracking-tighter text-pastel-gradient drop-shadow-sm">
               TOP 10
             </span>
-            <div className="border-l-2 border-gray-700 pl-3">
-              <h2 className="text-lg md:text-xl font-bold text-white uppercase tracking-wider">
+            <div className="border-l-2 border-slate-300 dark:border-gray-700 pl-3">
+              <h2 className="text-lg md:text-xl font-black text-slate-900 dark:text-white uppercase tracking-wider">
                 Series más Populares Hoy
               </h2>
-              <p className="text-xs text-gray-400">Las series con mayor audiencia el día de hoy</p>
+              <p className="text-xs text-slate-500 dark:text-gray-400">Las series con mayor audiencia el día de hoy</p>
             </div>
           </div>
           <Carousel

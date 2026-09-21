@@ -490,18 +490,18 @@ export default function VideoPlayer({
       </div>
 
       {/* Action Bar: Estado activo, Pantalla Completa, Recargar, Reportar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-[#051226]/90 backdrop-blur-md px-4 py-3 rounded-xl border border-blue-900/40 text-xs">
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-white/90 dark:bg-[#051226]/90 backdrop-blur-md px-4 py-3 rounded-xl border border-pastel-purple/30 dark:border-blue-900/40 text-xs shadow-sm">
         
         {/* Info del servidor activo */}
-        <div className="flex flex-wrap items-center gap-2 text-gray-300">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span>Reproduciendo en: <strong className="text-blue-400">{currentServer.name}</strong></span>
-          <span className={`px-2 py-0.5 rounded-full text-white font-bold text-[10px] ${
-            currentServer.category === 'latino' ? 'bg-purple-600' : 'bg-cyan-600'
+        <div className="flex flex-wrap items-center gap-2 text-slate-700 dark:text-gray-300">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse"></span>
+          <span>Reproduciendo en: <strong className="text-purple-700 dark:text-blue-400">{currentServer.name}</strong></span>
+          <span className={`px-2 py-0.5 rounded-full font-bold text-[10px] ${
+            currentServer.category === 'latino' ? 'bg-[#C19ADE] text-purple-950' : 'bg-[#6FCFEB] text-slate-950'
           }`}>
             {currentServer.langBadge}
           </span>
-          <span className="px-2 py-0.5 rounded-full bg-blue-950 text-blue-300 font-semibold text-[10px] border border-blue-800/40">
+          <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-blue-950 text-slate-700 dark:text-blue-300 font-semibold text-[10px] border border-slate-300 dark:border-blue-800/40">
             {currentServer.qualityBadge}
           </span>
         </div>
@@ -512,7 +512,7 @@ export default function VideoPlayer({
           {/* BOTÓN PANTALLA COMPLETA TOTAL (100% Pantalla) */}
           <button
             onClick={toggleFullscreen}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold shadow-lg shadow-blue-600/30 hover:shadow-blue-500/50 transition-all text-xs cursor-pointer active:scale-95"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-pastel-gradient text-slate-950 font-black shadow-md shadow-pastel-blue/40 hover:shadow-pastel-purple transition-all text-xs cursor-pointer active:scale-95"
             title="Poner en pantalla completa que ocupe todo el monitor, iPad o celular"
           >
             {isFullscreen ? (
@@ -531,10 +531,10 @@ export default function VideoPlayer({
           {/* Botón Recargar */}
           <button
             onClick={handleReload}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-950/60 hover:bg-blue-900/60 text-gray-200 hover:text-white border border-blue-800/50 transition-all text-xs cursor-pointer active:scale-95"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-blue-950/60 hover:bg-slate-200 dark:hover:bg-blue-900/60 text-slate-700 dark:text-gray-200 hover:text-slate-950 dark:hover:text-white border border-slate-300 dark:border-blue-800/50 transition-all text-xs cursor-pointer active:scale-95 font-medium"
             title="Recargar el reproductor si el video tarda en iniciar"
           >
-            <RotateCw className={`w-3.5 h-3.5 text-blue-400 ${isLoading ? 'animate-spin' : ''}`} />
+            <RotateCw className={`w-3.5 h-3.5 text-purple-600 dark:text-blue-400 ${isLoading ? 'animate-spin' : ''}`} />
             <span>Recargar</span>
           </button>
 
@@ -544,51 +544,51 @@ export default function VideoPlayer({
               setReported(true);
               setTimeout(() => setReported(false), 3000);
             }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-all text-xs cursor-pointer active:scale-95 ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-all text-xs cursor-pointer active:scale-95 font-medium ${
               reported
-                ? 'bg-emerald-900/40 border-emerald-500 text-emerald-300'
-                : 'bg-black/40 border-gray-800 text-gray-400 hover:text-amber-400 hover:border-amber-500/40'
+                ? 'bg-emerald-100 dark:bg-emerald-900/40 border-emerald-500 text-emerald-800 dark:text-emerald-300'
+                : 'bg-slate-100 dark:bg-black/40 border-slate-200 dark:border-gray-800 text-slate-600 dark:text-gray-400 hover:text-amber-600 dark:hover:text-amber-400 hover:border-amber-400'
             }`}
           >
-            <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+            <AlertTriangle className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
             <span>{reported ? '¡Reporte recibido!' : 'Reportar caído'}</span>
           </button>
         </div>
       </div>
 
       {/* APARTADO EXPANDIDO DE SERVIDORES CON PESTAÑAS DEDICADAS (LATINO vs SUBTITULADO) */}
-      <div className="bg-black/85 backdrop-blur-md border border-[#1a1c20]/80 rounded-2xl p-4 md:p-6 shadow-xl">
+      <div className="bg-white/95 dark:bg-black/85 backdrop-blur-md border border-pastel-purple/30 dark:border-[#1a1c20]/80 rounded-2xl p-4 md:p-6 shadow-xl">
         
         {/* Header con Pestañas de Idioma */}
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-6 pb-4 border-b border-gray-800/80">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-200 dark:border-gray-800/80">
           <div className="flex items-center gap-3">
-            <div className="w-1.5 h-7 bg-blue-500 rounded-full shadow-lg shadow-blue-500/50"></div>
+            <div className="w-1.5 h-7 bg-pastel-gradient rounded-full shadow-md shadow-pastel-purple/50"></div>
             <div>
-              <h3 className="text-white font-bold text-lg md:text-xl flex items-center gap-2">
+              <h3 className="text-slate-900 dark:text-white font-bold text-lg md:text-xl flex items-center gap-2">
                 <span>Servidores de Transmisión</span>
-                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-900/40 text-blue-300 border border-blue-800/40">
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-pastel-purple/20 text-purple-800 dark:bg-blue-900/40 dark:text-blue-300 border border-pastel-purple/40 dark:border-blue-800/40">
                   {displayedServers.length} activos
                 </span>
               </h3>
-              <p className="text-xs text-gray-400 mt-0.5">Ordenados de mayor a menor fiabilidad, velocidad y compatibilidad</p>
+              <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5">Ordenados de mayor a menor fiabilidad, velocidad y compatibilidad</p>
             </div>
           </div>
 
           {/* Pestañas de Selección de Idioma */}
-          <div className="flex flex-wrap items-center gap-2 bg-[#020b18]/80 p-1.5 rounded-2xl border border-gray-800">
+          <div className="flex flex-wrap items-center gap-2 bg-slate-100/90 dark:bg-[#020b18]/80 p-1.5 rounded-2xl border border-slate-200 dark:border-gray-800">
             
             {/* Pestaña Español Latino */}
             <button
               onClick={() => handleTabChange('latino')}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
                 activeTab === 'latino'
-                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-600/40 scale-102'
-                  : 'text-gray-300 hover:text-white hover:bg-white/5'
+                  ? 'bg-pastel-gradient text-slate-950 shadow-md shadow-pastel-rose/40 scale-102'
+                  : 'text-slate-600 dark:text-gray-300 hover:text-slate-950 dark:hover:text-white hover:bg-white dark:hover:bg-white/5'
               }`}
             >
-              <Languages className="w-4 h-4 text-emerald-400" />
+              <Languages className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               <span>Español Latino</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-black/40 text-blue-200 font-black">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-black/20 dark:bg-black/40 text-slate-950 dark:text-blue-200 font-black">
                 {latinoCount}
               </span>
             </button>
@@ -596,15 +596,15 @@ export default function VideoPlayer({
             {/* Pestaña Subtitulado al Español */}
             <button
               onClick={() => handleTabChange('subtitulado')}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
                 activeTab === 'subtitulado'
-                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-600/40 scale-102'
-                  : 'text-gray-300 hover:text-white hover:bg-white/5'
+                  ? 'bg-pastel-gradient text-slate-950 shadow-md shadow-pastel-blue/40 scale-102'
+                  : 'text-slate-600 dark:text-gray-300 hover:text-slate-950 dark:hover:text-white hover:bg-white dark:hover:bg-white/5'
               }`}
             >
-              <Subtitles className="w-4 h-4 text-cyan-400" />
+              <Subtitles className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
               <span>Subtitulado (Sub Español)</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-black/40 text-blue-200 font-black">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-black/20 dark:bg-black/40 text-slate-950 dark:text-blue-200 font-black">
                 {subCount}
               </span>
             </button>
@@ -612,10 +612,10 @@ export default function VideoPlayer({
             {/* Pestaña Todos */}
             <button
               onClick={() => handleTabChange('all')}
-              className={`px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+              className={`px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'all'
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'text-gray-400 hover:text-white hover:bg-white/5'
+                  ? 'bg-slate-300 dark:bg-blue-600 text-slate-950 dark:text-white shadow-sm'
+                  : 'text-slate-500 dark:text-gray-400 hover:text-slate-950 dark:hover:text-white'
               }`}
             >
               Ver Todos ({SERVERS.length})
@@ -624,8 +624,8 @@ export default function VideoPlayer({
         </div>
 
         {/* Banner de Asistencia Inteligente */}
-        <div className="mb-5 p-3.5 rounded-xl bg-blue-950/30 border border-blue-900/40 flex items-start gap-3 text-xs text-gray-300">
-          <Sparkles className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+        <div className="mb-5 p-3.5 rounded-xl bg-purple-50/80 dark:bg-blue-950/30 border border-pastel-purple/40 dark:border-blue-900/40 flex items-start gap-3 text-xs text-slate-700 dark:text-gray-300">
+          <Sparkles className="w-4 h-4 text-purple-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
           {activeTab === 'latino' ? (
             <p>
               <b>🇲🇽 Servidores 100% en Español Latino:</b> Todos los {latinoCount} servidores de esta pestaña están conectados directamente a motores nativos de doblaje en español latino (Modocine, NSRPlay, SoloLatino, MultiEmbed y Embed69). Si un título extranjero o estreno muy reciente no tiene doblaje latino oficial grabado, puedes cambiar a la pestaña <b>&quot;Subtitulado (Sub Español)&quot;</b> para disfrutarlo en su audio original con subtítulos sincronizados.
@@ -652,7 +652,7 @@ export default function VideoPlayer({
                 key={server.id}
                 className={`relative group rounded-2xl overflow-hidden transition-all duration-300 ${
                   isActive
-                    ? 'ring-2 ring-blue-500 scale-[1.02] shadow-xl shadow-blue-500/25'
+                    ? 'ring-2 ring-pastel-purple dark:ring-blue-500 scale-[1.02] shadow-xl shadow-pastel-purple/25 dark:shadow-blue-500/25'
                     : 'hover:scale-[1.01]'
                 }`}
               >
@@ -660,28 +660,28 @@ export default function VideoPlayer({
                   onClick={() => handleServerChange(server.id)}
                   className={`w-full h-full text-left p-4 rounded-2xl border transition-all duration-300 flex flex-col justify-between gap-3 cursor-pointer ${
                     isActive
-                      ? 'bg-gradient-to-br from-[#020d20] via-[#051838] to-[#0a2550] border-blue-500/80 text-white'
-                      : 'bg-[#080b11] hover:bg-[#0d121c] border-white/10 text-white/90 hover:text-white hover:border-gray-700'
+                      ? 'bg-gradient-to-br from-purple-50 to-blue-50 dark:from-[#020d20] dark:via-[#051838] dark:to-[#0a2550] border-pastel-purple dark:border-blue-500/80 text-slate-900 dark:text-white'
+                      : 'bg-slate-50 dark:bg-[#080b11] hover:bg-purple-50/60 dark:hover:bg-[#0d121c] border-slate-200 dark:border-white/10 text-slate-800 dark:text-white/90 hover:text-slate-950 dark:hover:text-white hover:border-pastel-purple/60 dark:hover:border-gray-700'
                   }`}
                 >
                   {/* Top Bar: Rango y Estado Online */}
                   <div className="flex items-center justify-between gap-2 w-full">
                     <div className="flex items-center gap-1.5">
                       {isFirst ? (
-                        <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-black text-[10px] shadow-md shadow-yellow-500/30">
+                        <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-pastel-gradient text-slate-950 font-black text-[10px] shadow-sm">
                           <Crown className="w-3 h-3 fill-current" />
                           {server.rankBadge}
                         </span>
                       ) : (
-                        <span className="px-2 py-0.5 rounded-full bg-blue-950 text-blue-300 font-bold text-[10px] border border-blue-800/50">
+                        <span className="px-2 py-0.5 rounded-full bg-pastel-purple/20 dark:bg-blue-950 text-purple-900 dark:text-blue-300 font-bold text-[10px] border border-pastel-purple/40 dark:border-blue-800/50">
                           {server.rankBadge}
                         </span>
                       )}
                     </div>
 
-                    <div className="flex items-center gap-1.5 text-[10px] text-gray-400">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                      <span className="text-emerald-400 font-semibold">{server.speedBadge}</span>
+                    <div className="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-gray-400">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse"></span>
+                      <span className="text-emerald-700 dark:text-emerald-400 font-bold">{server.speedBadge}</span>
                     </div>
                   </div>
 
@@ -689,34 +689,34 @@ export default function VideoPlayer({
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
-                        isActive ? 'bg-blue-600 text-white' : 'bg-white/10 text-gray-400 group-hover:text-blue-400'
+                        isActive ? 'bg-pastel-gradient text-slate-950' : 'bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-gray-400 group-hover:text-purple-700'
                       }`}>
                         <Zap className="w-3.5 h-3.5 fill-current" />
                       </div>
-                      <h4 className="font-bold text-sm md:text-base text-white truncate">
+                      <h4 className="font-bold text-sm md:text-base text-slate-900 dark:text-white truncate">
                         {server.name}
                       </h4>
                     </div>
-                    <p className="text-[11px] text-gray-400 leading-snug line-clamp-2 pl-8 font-light">
+                    <p className="text-[11px] text-slate-500 dark:text-gray-400 leading-snug line-clamp-2 pl-8 font-light">
                       {server.description}
                     </p>
                   </div>
 
                   {/* Bottom: Badges de Calidad e Idioma */}
-                  <div className="flex items-center justify-between pt-2 border-t border-white/5 w-full text-[10px]">
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-white/5 w-full text-[10px]">
                     <div className="flex items-center gap-1.5">
-                      <span className={`px-2 py-0.5 rounded-md font-bold text-white shadow-sm ${
-                        server.category === 'latino' ? 'bg-purple-600/90' : 'bg-cyan-600/90'
+                      <span className={`px-2 py-0.5 rounded-md font-bold shadow-sm ${
+                        server.category === 'latino' ? 'bg-[#C19ADE] text-purple-950' : 'bg-[#6FCFEB] text-slate-950'
                       }`}>
                         {server.langBadge}
                       </span>
-                      <span className="px-2 py-0.5 rounded-md bg-white/5 text-gray-300 font-medium border border-white/10">
+                      <span className="px-2 py-0.5 rounded-md bg-slate-200/80 dark:bg-white/5 text-slate-700 dark:text-gray-300 font-medium border border-slate-300 dark:border-white/10">
                         {server.qualityBadge}
                       </span>
                     </div>
 
                     {isActive && (
-                      <span className="flex items-center gap-1 text-blue-400 font-bold">
+                      <span className="flex items-center gap-1 text-purple-700 dark:text-blue-400 font-bold">
                         <CheckCircle2 className="w-3.5 h-3.5" />
                         <span>Activo</span>
                       </span>

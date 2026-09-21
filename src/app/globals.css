@@ -3,20 +3,65 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 0, 8, 20;
-  --background-end-rgb: 0, 8, 20;
+  /* Modo Claro - Paleta Pastel Exclusiva */
+  --background: #f8fafd;
+  --foreground: #0f172a;
+  --surface-card: #ffffff;
+  --surface-nav: rgba(255, 255, 255, 0.9);
+  --border-subtle: rgba(193, 154, 222, 0.3);
+  --text-muted: #64748b;
+  --brand-cyan: #6FCFEB;
+  --brand-purple: #C19ADE;
+  --brand-pink: #F3B2DB;
+  --brand-rose: #FEAEBB;
+  --brand-yellow: #F3EFA1;
+  --brand-mint: #99E6D8;
+}
+
+.dark {
+  /* Modo Oscuro - Deep Space Cinematic */
+  --background: #000814;
+  --foreground: #ffffff;
+  --surface-card: #051226;
+  --surface-nav: rgba(2, 11, 24, 0.85);
+  --border-subtle: rgba(59, 130, 246, 0.2);
+  --text-muted: #94a3b8;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: rgb(var(--background-start-rgb));
+  color: var(--foreground);
+  background-color: var(--background);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Gradientes de la identidad KEZARSTREAM */
+.text-pastel-gradient {
+  background: linear-gradient(135deg, #6FCFEB 0%, #C19ADE 50%, #FEAEBB 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.bg-pastel-gradient {
+  background: linear-gradient(135deg, #6FCFEB 0%, #C19ADE 50%, #FEAEBB 100%);
+}
+
+.bg-pastel-soft {
+  background: linear-gradient(135deg, rgba(111, 207, 235, 0.15) 0%, rgba(193, 154, 222, 0.15) 50%, rgba(254, 174, 187, 0.15) 100%);
+}
+
+.light .light-mesh-bg {
+  background-image: 
+    radial-gradient(at 10% 10%, rgba(111, 207, 235, 0.12) 0px, transparent 50%),
+    radial-gradient(at 90% 15%, rgba(193, 154, 222, 0.12) 0px, transparent 50%),
+    radial-gradient(at 50% 85%, rgba(254, 174, 187, 0.10) 0px, transparent 50%),
+    radial-gradient(at 15% 75%, rgba(153, 230, 216, 0.12) 0px, transparent 50%),
+    radial-gradient(at 85% 65%, rgba(243, 239, 161, 0.12) 0px, transparent 50%);
 }
 
 .scrollbar-hide::-webkit-scrollbar {
-    display: none;
+  display: none;
 }
 .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

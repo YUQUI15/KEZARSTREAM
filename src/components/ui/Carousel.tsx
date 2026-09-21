@@ -31,20 +31,22 @@ export default function Carousel({ title = '', items, cardType = 'poster' }: Car
   return (
     <div className="py-6">
       <div className="flex items-center justify-between px-4 md:px-8 mb-4">
-        <h2 className="text-xl md:text-2xl font-bold text-white border-l-4 border-blue-500 pl-3">
+        <h2 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white border-l-4 border-[#C19ADE] pl-3 tracking-tight">
           {title}
         </h2>
         
         <div className="hidden md:flex gap-2">
           <button 
             onClick={() => scroll('left')}
-            className="p-2 rounded-full bg-gray-900/50 hover:bg-blue-600 text-white transition-colors border border-gray-800"
+            className="p-2 rounded-full bg-slate-100 dark:bg-gray-900/60 hover:bg-pastel-gradient text-slate-700 dark:text-white hover:text-slate-950 transition-all border border-slate-200 dark:border-gray-800 shadow-sm cursor-pointer"
+            aria-label="Desplazar a la izquierda"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
           <button 
             onClick={() => scroll('right')}
-            className="p-2 rounded-full bg-gray-900/50 hover:bg-blue-600 text-white transition-colors border border-gray-800"
+            className="p-2 rounded-full bg-slate-100 dark:bg-gray-900/60 hover:bg-pastel-gradient text-slate-700 dark:text-white hover:text-slate-950 transition-all border border-slate-200 dark:border-gray-800 shadow-sm cursor-pointer"
+            aria-label="Desplazar a la derecha"
           >
             <ChevronRight className="w-5 h-5" />
           </button>
