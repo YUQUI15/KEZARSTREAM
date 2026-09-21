@@ -52,55 +52,21 @@ interface StreamServer {
   ) => string;
 }
 
-// 18 Servidores de alta disponibilidad organizados jerárquicamente en orden descendente
+// 16 Servidores de alta disponibilidad organizados jerárquicamente en orden descendente
 const SERVERS: StreamServer[] = [
   // ==========================================
-  // SECCIÓN 1: 🇲🇽 ESPAÑOL LATINO (Orden Descendente #1 a #9)
+  // SECCIÓN 1: 🇲🇽 ESPAÑOL LATINO (Servidores 100% con Audio Latino)
   // ==========================================
   {
     id: 1,
-    name: 'NSRPLAY (Latino VIP)',
+    name: 'PLAYSTREAM (Modocine 4K Latino VIP)',
     rank: 1,
-    rankBadge: '#1 Recomendado',
+    rankBadge: '#1 Recomendado Latino',
     category: 'latino',
-    langBadge: 'Español Latino',
-    qualityBadge: '1080p Full HD',
-    speedBadge: 'Ultra Rápido',
-    description: 'Servidor oficial principal con la mayor biblioteca de audio latino y sincronización de metadatos.',
-    getUrl: (isMovie, tmdbId, imdbId, s, e, { title, backdrop, thumb }) => {
-      const q = `?title=${encodeURIComponent(title)}&backdrop=${encodeURIComponent(backdrop)}&thumb=${encodeURIComponent(thumb)}`;
-      return isMovie
-        ? `https://nsrplay.space/embed/movie/${tmdbId}${q}`
-        : `https://nsrplay.space/embed/tv/${tmdbId}/${s}/${e}${q}`;
-    }
-  },
-  {
-    id: 2,
-    name: 'MULTIEMBED (Español Latino Pro)',
-    rank: 2,
-    rankBadge: '#2 Alta Velocidad',
-    category: 'latino',
-    langBadge: 'Español Latino',
-    qualityBadge: '1080p HD',
-    speedBadge: 'Rápido',
-    description: 'Motor limpio de alta disponibilidad, ideal para estrenos recientes y series populares.',
-    getUrl: (isMovie, tmdbId, imdbId, s, e, { title, backdrop, thumb }) => {
-      const q = `?title=${encodeURIComponent(title)}&backdrop=${encodeURIComponent(backdrop)}&thumb=${encodeURIComponent(thumb)}`;
-      return isMovie
-        ? `https://multiembed-clean.wptheme.site/embed/movie/${tmdbId}${q}`
-        : `https://multiembed-clean.wptheme.site/embed/tv/${tmdbId}/${s}/${e}${q}`;
-    }
-  },
-  {
-    id: 3,
-    name: 'PLAYSTREAM (Modocine 4K Latino)',
-    rank: 3,
-    rankBadge: '#3 Ultra HD 4K',
-    category: 'latino',
-    langBadge: 'Audio Latino / 4K',
+    langBadge: '100% Audio Latino',
     qualityBadge: '4K Ultra HD',
-    speedBadge: 'Alta Calidad',
-    description: 'Transmisión en resolución 4K con tasa de bits cinematográfica y audio latino.',
+    speedBadge: 'Ultra Rápido',
+    description: 'Motor principal con 8 servidores nativos en Español Latino (Vimeos, Goodstream, Streamwish, Filemoon, Vidara).',
     getUrl: (isMovie, tmdbId, imdbId, s, e, { title, backdrop, thumb }) => {
       const q = `?title=${encodeURIComponent(title)}&backdrop=${encodeURIComponent(backdrop)}&thumb=${encodeURIComponent(thumb)}`;
       return isMovie
@@ -109,116 +75,122 @@ const SERVERS: StreamServer[] = [
     }
   },
   {
-    id: 4,
-    name: 'CUEVANA CLOUD (Latino Directo)',
-    rank: 4,
-    rankBadge: '#4 Respaldo Rápido',
+    id: 2,
+    name: 'NSRPLAY (Latino Directo HLS)',
+    rank: 2,
+    rankBadge: '#2 Alta Velocidad',
     category: 'latino',
-    langBadge: 'Español Latino',
-    qualityBadge: '1080p',
-    speedBadge: 'Excelente',
-    description: 'Servidor optimizado para conexiones móviles y redes residenciales sin cortes.',
+    langBadge: '100% Audio Latino',
+    qualityBadge: '1080p Full HD',
+    speedBadge: 'Instantáneo',
+    description: 'Transmisión HLS nativa en español latino directo sin cortes (Vimeos LAT, Nsr Play LAT, Streamwish LAT).',
+    getUrl: (isMovie, tmdbId, imdbId, s, e, { title, backdrop, thumb }) => {
+      const q = `?title=${encodeURIComponent(title)}&backdrop=${encodeURIComponent(backdrop)}&thumb=${encodeURIComponent(thumb)}`;
+      return isMovie
+        ? `https://nsrplay.space/embed/movie/${tmdbId}${q}`
+        : `https://nsrplay.space/embed/tv/${tmdbId}/${s}/${e}${q}`;
+    }
+  },
+  {
+    id: 3,
+    name: 'UNLIMPLAY (SoloLatino Cloud Pro)',
+    rank: 3,
+    rankBadge: '#3 SoloLatino Pro',
+    category: 'latino',
+    langBadge: '100% Audio Latino',
+    qualityBadge: '1080p HD',
+    speedBadge: 'Rápido',
+    description: 'Multi-scraper oficial de SoloLatino con AdBlocker integrado y selección automática de doblaje latino.',
     getUrl: (isMovie, tmdbId, imdbId, s, e) =>
       isMovie
-        ? `https://autoembed.co/movie/tmdb/${tmdbId}`
-        : `https://autoembed.co/tv/tmdb/${tmdbId}-${s}-${e}`
+        ? `https://unlimplay.com/f/embed/movie/${tmdbId}`
+        : `https://unlimplay.com/f/embed/tv/${tmdbId}/${s}/${e}`
+  },
+  {
+    id: 4,
+    name: 'MULTIEMBED (Modo Latino Clean)',
+    rank: 4,
+    rankBadge: '#4 Reproductor Limpio',
+    category: 'latino',
+    langBadge: '100% Audio Latino',
+    qualityBadge: '1080p HD',
+    speedBadge: 'Fluido',
+    description: 'Motor limpio de alta disponibilidad, enfocado en catálogo latino para estrenos y series completas.',
+    getUrl: (isMovie, tmdbId, imdbId, s, e, { title, backdrop, thumb }) => {
+      const q = `?title=${encodeURIComponent(title)}&backdrop=${encodeURIComponent(backdrop)}&thumb=${encodeURIComponent(thumb)}`;
+      return isMovie
+        ? `https://multiembed-clean.wptheme.site/embed/movie/${tmdbId}${q}`
+        : `https://multiembed-clean.wptheme.site/embed/tv/${tmdbId}/${s}/${e}${q}`;
+    }
   },
   {
     id: 5,
-    name: 'PELISPLUS HD (Audio Dual)',
+    name: 'EMBED69 (Latino Premier Scraper)',
     rank: 5,
-    rankBadge: '#5 Audio Dual',
+    rankBadge: '#5 Base de Datos Latino',
     category: 'latino',
-    langBadge: 'Latino / Dual',
-    qualityBadge: '1080p HD',
-    speedBadge: 'Estable',
-    description: 'Opción alternativa con pistas de audio latino y selector de pistas integrado.',
+    langBadge: '100% Audio Latino',
+    qualityBadge: 'HD Directo',
+    speedBadge: 'Excelente',
+    description: 'Base de datos especializada en recolección de audio en español latino (PelisPlus y Cuevana).',
     getUrl: (isMovie, tmdbId, imdbId, s, e) =>
       isMovie
-        ? `https://player.videasy.net/movie/${tmdbId}`
-        : `https://player.videasy.net/tv/${tmdbId}/${s}/${e}`
+        ? `https://embed69.org/f/${tmdbId}`
+        : `https://unlimplay.com/f/embed/tv/${tmdbId}/${s}/${e}`
   },
   {
     id: 6,
-    name: 'VIDLINK LATINO (Full HD)',
+    name: 'PLAYSTREAM DIRECT (Espejo Modocine)',
     rank: 6,
-    rankBadge: '#6 Alta Fidelidad',
+    rankBadge: '#6 Espejo Rápido',
     category: 'latino',
-    langBadge: 'Español Latino',
-    qualityBadge: '1080p Full HD',
-    speedBadge: 'Muy Rápido',
-    description: 'Motor de alta definición con pista en español latino preconfigurada.',
-    getUrl: (isMovie, tmdbId, imdbId, s, e) =>
-      isMovie
-        ? `https://vidlink.pro/movie/${tmdbId}`
-        : `https://vidlink.pro/tv/${tmdbId}/${s}/${e}`
+    langBadge: '100% Audio Latino',
+    qualityBadge: '4K Ultra HD',
+    speedBadge: 'Alta Velocidad',
+    description: 'Ruta directa sin intermediarios con auto-arranque inmediato del reproductor en español latino.',
+    getUrl: (isMovie, tmdbId, imdbId, s, e, { title, backdrop, thumb }) => {
+      const q = `?title=${encodeURIComponent(title)}&backdrop=${encodeURIComponent(backdrop)}&thumb=${encodeURIComponent(thumb)}`;
+      return isMovie
+        ? `https://play.modocine.com/movie/${tmdbId}${q}`
+        : `https://play.modocine.com/tv/${tmdbId}/${s}/${e}${q}`;
+    }
   },
   {
     id: 7,
-    name: 'AUTOEMBED LATINO (Buffer Cero)',
+    name: 'NSRPLAY DIRECT (Buffer Cero Latino)',
     rank: 7,
-    rankBadge: '#7 Carga Inmediata',
+    rankBadge: '#7 Baja Latencia',
     category: 'latino',
-    langBadge: 'Español Latino',
-    qualityBadge: 'HD Rápido',
-    speedBadge: 'Buffer Cero',
-    description: 'Servidor de baja latencia para reproducción continua sin pausas ni esperas.',
-    getUrl: (isMovie, tmdbId, imdbId, s, e) =>
-      isMovie
-        ? `https://autoembed.co/movie/tmdb/${tmdbId}`
-        : `https://autoembed.co/tv/tmdb/${tmdbId}-${s}-${e}`
-  },
-  {
-    id: 8,
-    name: 'VIDSRC PRO LATINO (Respaldo VIP)',
-    rank: 8,
-    rankBadge: '#8 Respaldo VIP',
-    category: 'latino',
-    langBadge: 'Latino / Multi',
+    langBadge: '100% Audio Latino',
     qualityBadge: '1080p HD',
-    speedBadge: 'Estable',
-    description: 'Compatible con TMDB e IMDb ID para encontrar títulos no disponibles en otros servidores.',
+    speedBadge: 'Buffer Cero',
+    description: 'Conexión directa ligera a fuentes en español latino para conexiones residenciales y móviles sin pausas.',
     getUrl: (isMovie, tmdbId, imdbId, s, e) =>
       isMovie
-        ? `https://vidsrc.pm/embed/movie/${imdbId || tmdbId}`
-        : `https://vidsrc.pm/embed/tv/${imdbId || tmdbId}/${s}/${e}`
-  },
-  {
-    id: 9,
-    name: 'LATINOMAX (Contingencia Total)',
-    rank: 9,
-    rankBadge: '#9 Contingencia',
-    category: 'latino',
-    langBadge: 'Multi-Latino',
-    qualityBadge: 'HD',
-    speedBadge: 'Respaldo',
-    description: 'Línea de contingencia para títulos difíciles de encontrar o servidores saturados.',
-    getUrl: (isMovie, tmdbId, imdbId, s, e) =>
-      isMovie
-        ? `https://vidsrc.in/embed/movie/${imdbId || tmdbId}`
-        : `https://vidsrc.in/embed/tv/${imdbId || tmdbId}/${s}/${e}`
+        ? `https://nsrplay.space/embed/movie/${tmdbId}`
+        : `https://nsrplay.space/embed/tv/${tmdbId}/${s}/${e}`
   },
 
   // ==========================================
-  // SECCIÓN 2: 💬 SUBTITULADO AL ESPAÑOL (Orden Descendente #1 a #9)
+  // SECCIÓN 2: 💬 SUBTITULADO AL ESPAÑOL (Audio Original + Subtítulos en Español)
   // ==========================================
   {
-    id: 10,
+    id: 8,
     name: 'VIDLINK SUB (Sub Español Oficial)',
     rank: 1,
     rankBadge: '#1 Recomendado Sub',
     category: 'subtitulado',
-    langBadge: 'Sub Español',
+    langBadge: 'Sub Español Oficial',
     qualityBadge: '1080p Full HD',
     speedBadge: 'Ultra Rápido',
-    description: 'El mejor motor de subtítulos en español: tipografía nítida, sincronización perfecta y 1080p.',
+    description: 'Audio original con subtítulos sincronizados oficiales en español (?sub=es), tipografía legible y 1080p.',
     getUrl: (isMovie, tmdbId, imdbId, s, e) =>
       isMovie
         ? `https://vidlink.pro/movie/${tmdbId}?sub=es`
         : `https://vidlink.pro/tv/${tmdbId}/${s}/${e}?sub=es`
   },
   {
-    id: 11,
+    id: 9,
     name: 'AUTOEMBED SUB (Subtitulado Inteligente)',
     rank: 2,
     rankBadge: '#2 Subtitulado Pro',
@@ -226,29 +198,29 @@ const SERVERS: StreamServer[] = [
     langBadge: 'Sub Español',
     qualityBadge: '1080p HD',
     speedBadge: 'Instantáneo',
-    description: 'Carga inmediata con subtítulos en español preseleccionados y reproductor fluido.',
+    description: 'Carga rápida con selector de subtítulos en español y reproductor optimizado.',
     getUrl: (isMovie, tmdbId, imdbId, s, e) =>
       isMovie
         ? `https://autoembed.co/movie/tmdb/${tmdbId}`
         : `https://autoembed.co/tv/tmdb/${tmdbId}-${s}-${e}`
   },
   {
-    id: 12,
-    name: 'VIDSRC PRO SUB (Audio Original + Sub)',
+    id: 10,
+    name: 'VIDSRC PRO SUB (Audio Original VIP)',
     rank: 3,
     rankBadge: '#3 Audio Original VIP',
     category: 'subtitulado',
     langBadge: 'Sub Español / Multi',
     qualityBadge: '1080p HD',
     speedBadge: 'Alta Velocidad',
-    description: 'Audio original en máxima fidelidad con selector de subtítulos en español e inglés.',
+    description: 'Audio en máxima fidelidad con selector multilingüe de subtítulos en español e inglés.',
     getUrl: (isMovie, tmdbId, imdbId, s, e) =>
       isMovie
         ? `https://vidsrc.pm/embed/movie/${imdbId || tmdbId}`
         : `https://vidsrc.pm/embed/tv/${imdbId || tmdbId}/${s}/${e}`
   },
   {
-    id: 13,
+    id: 11,
     name: 'VIDSRC IN SUB (Buffer Cero Subtitulado)',
     rank: 4,
     rankBadge: '#4 Buffer Cero',
@@ -256,14 +228,14 @@ const SERVERS: StreamServer[] = [
     langBadge: 'Sub Español',
     qualityBadge: '1080p HD',
     speedBadge: 'Rápido',
-    description: 'Infraestructura CDN optimizada para reproducción continua sin pausas ni buffering.',
+    description: 'Red CDN global para reproducción fluida con subtítulos en español sin pausas.',
     getUrl: (isMovie, tmdbId, imdbId, s, e) =>
       isMovie
         ? `https://vidsrc.in/embed/movie/${imdbId || tmdbId}`
         : `https://vidsrc.in/embed/tv/${imdbId || tmdbId}/${s}/${e}`
   },
   {
-    id: 14,
+    id: 12,
     name: 'VIDEASY SUB (Reproductor Limpio)',
     rank: 5,
     rankBadge: '#5 Reproductor Rápido',
@@ -271,14 +243,14 @@ const SERVERS: StreamServer[] = [
     langBadge: 'Sub Español',
     qualityBadge: '1080p HD',
     speedBadge: 'Muy Fluido',
-    description: 'Interfaz de reproducción rápida y moderna con subtítulos flotantes de alta legibilidad.',
+    description: 'Interfaz moderna y rápida con subtítulos flotantes de alta legibilidad.',
     getUrl: (isMovie, tmdbId, imdbId, s, e) =>
       isMovie
         ? `https://player.videasy.net/movie/${tmdbId}`
         : `https://player.videasy.net/tv/${tmdbId}/${s}/${e}`
   },
   {
-    id: 15,
+    id: 13,
     name: '2EMBED GLOBAL (Catálogo Mundial Sub)',
     rank: 6,
     rankBadge: '#6 Catálogo Total',
@@ -286,14 +258,14 @@ const SERVERS: StreamServer[] = [
     langBadge: 'Sub Español',
     qualityBadge: 'HD',
     speedBadge: 'Estable',
-    description: 'Garantiza disponibilidad para producciones independientes, anime y festivales de cine.',
+    description: 'Disponibilidad universal para producciones internacionales, cine asiático, europeo y anime.',
     getUrl: (isMovie, tmdbId, imdbId, s, e) =>
       isMovie
         ? `https://www.2embed.cc/embed/${imdbId || tmdbId}`
         : `https://www.2embed.cc/embedtv/${imdbId || tmdbId}&s=${s}&e=${e}`
   },
   {
-    id: 16,
+    id: 14,
     name: 'SUPEREMBED MULTI (Respaldo Sub)',
     rank: 7,
     rankBadge: '#7 Respaldo Multi',
@@ -308,7 +280,7 @@ const SERVERS: StreamServer[] = [
         : `https://multiembed.mov/?video_id=${tmdbId}&tmdb=1&s=${s}&e=${e}`
   },
   {
-    id: 17,
+    id: 15,
     name: 'SMASHYSTREAM SUB (Alternativa Rápida)',
     rank: 8,
     rankBadge: '#8 Alternativa Sub',
@@ -323,7 +295,7 @@ const SERVERS: StreamServer[] = [
         : `https://embed.smashystream.com/playere.php?tmdb=${tmdbId}&season=${s}&episode=${e}`
   },
   {
-    id: 18,
+    id: 16,
     name: 'VIDSRC NET (Contingencia Sub)',
     rank: 9,
     rankBadge: '#9 Contingencia Sub',
@@ -431,7 +403,7 @@ export default function VideoPlayer({
       setSelectedServer(1);
       setIsLoading(true);
     } else if (tab === 'subtitulado' && currentServer.category !== 'subtitulado') {
-      setSelectedServer(10);
+      setSelectedServer(8);
       setIsLoading(true);
     }
   };
@@ -656,15 +628,15 @@ export default function VideoPlayer({
           <Sparkles className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
           {activeTab === 'latino' ? (
             <p>
-              <b>¿Buscas audio en Español Latino?</b> Tienes {latinoCount} servidores especializados ordenados de mayor a menor efectividad. Si un título en particular no cuenta con doblaje oficial en los primeros servidores, prueba los siguientes de la lista o cambia arriba a la pestaña <b>&quot;Subtitulado (Sub Español)&quot;</b> para reproducirlo con audio original y subtítulos garantizados.
+              <b>🇲🇽 Servidores 100% en Español Latino:</b> Todos los {latinoCount} servidores de esta pestaña están conectados directamente a motores nativos de doblaje en español latino (Modocine, NSRPlay, SoloLatino, MultiEmbed y Embed69). Si un título extranjero o estreno muy reciente no tiene doblaje latino oficial grabado, puedes cambiar a la pestaña <b>&quot;Subtitulado (Sub Español)&quot;</b> para disfrutarlo en su audio original con subtítulos sincronizados.
             </p>
           ) : activeTab === 'subtitulado' ? (
             <p>
-              <b>Servidores Subtitulados al Español ({subCount} opciones):</b> Cobertura de prácticamente el 99.9% de títulos mundiales (estrenos de cine, anime, cine de autor o producciones independientes). Cada servidor cuenta con subtítulos en español sincronizados.
+              <b>💬 Servidores Subtitulados al Español ({subCount} opciones):</b> Reproducción en idioma original con subtítulos en español sincronizados de alta legibilidad. Cobertura del 99.9% de títulos mundiales (cine internacional, anime, festivales y estrenos).
             </p>
           ) : (
             <p>
-              Visualizando todos los {SERVERS.length} servidores de alta potencia clasificados por orden de velocidad y compatibilidad de audio.
+              Visualizando todos los {SERVERS.length} servidores de transmisión organizados por idioma y velocidad.
             </p>
           )}
         </div>
