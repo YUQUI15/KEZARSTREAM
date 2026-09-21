@@ -7,6 +7,7 @@ import VideoPlayer from '@/components/player/VideoPlayer';
 import SeasonSelector from '@/components/player/SeasonSelector';
 import Carousel from '@/components/ui/Carousel';
 import { getMovieDetails, getTVDetails, getSimilar } from '@/lib/tmdb';
+import { getBackdropUrl, getPosterUrl } from '@/lib/image';
 
 interface PageProps {
   params: { tipo: string; id: string };
@@ -68,6 +69,8 @@ export default async function WatchPage({ params, searchParams }: PageProps) {
   const year = (details.release_date || details.first_air_date || '').substring(0, 4);
   const rating = Number(details.vote_average || 0).toFixed(1);
   const backdropPath = details.backdrop_path;
+  const backdropUrl = getBackdropUrl(details.backdrop_path, 'original');
+  const posterUrl = getPosterUrl(details.poster_path, 'w500');
 
   return (
     <main className="min-h-screen bg-[#000814] text-white pt-20 pb-20 relative overflow-hidden">
