@@ -241,8 +241,15 @@ export default function Navbar() {
           </nav>
 
           {/* Tablet & Desktop Search Bar with Animated Placeholder & Dropdown */}
-          <div ref={searchBoxRef} className="hidden md:block relative flex-1 max-w-sm lg:max-w-md xl:max-w-lg mx-2">
-            <form onSubmit={handleSearchSubmit} className="relative">
+          <div 
+            ref={searchBoxRef} 
+            className={`hidden md:block relative transition-[width] duration-500 ease-in-out ${
+              query || showDropdown 
+                ? 'w-[400px] lg:w-[520px]' 
+                : 'w-[220px] lg:w-[260px] focus-within:w-[400px] focus-within:lg:w-[520px]'
+            } mx-2`}
+          >
+            <form onSubmit={handleSearchSubmit} className="relative w-full">
               <input
                 ref={searchInputRef}
                 type="search"
@@ -250,8 +257,8 @@ export default function Navbar() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onFocus={() => query.trim().length >= 2 && setShowDropdown(true)}
-                placeholder={placeholderText || "Buscar películas, series..."}
-                style={{ fontSize: '16px' }} /* prevents iOS auto-zoom on focus */
+                placeholder={placeholderText || "Buscar películas..."}
+                style={{ fontSize: '16px' }}
                 className={`w-full pl-10 pr-9 py-2.5 rounded-full border outline-none transition-all shadow-inner cursor-text font-medium ${
                   isOverHero
                     ? 'bg-black/40 backdrop-blur-md text-white placeholder-gray-300 border-white/25 focus:border-pastel-cyan focus:ring-1 focus:ring-pastel-cyan'
