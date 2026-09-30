@@ -65,3 +65,49 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* ── SEARCH INPUT FIXES ────────────────────────────────────────────────────
+   Problem: On iOS Safari & Chrome, type="search" shows a native X button
+   that conflicts with our custom clear button. Also, iOS can make the text
+   appear white-on-white or invisible. These rules fix both issues.
+*/
+
+/* Hide the native browser "clear" button on search inputs */
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
+
+/* Ensure typed text in search inputs is always visible (critical fix for iOS) */
+input[type="search"],
+input[type="text"] {
+  /* Force the caret (blinking cursor) to be visible */
+  caret-color: #a855f7; /* purple-500 */
+  -webkit-text-fill-color: inherit; /* prevent iOS from overriding text color */
+}
+
+/* iOS sometimes renders input text as transparent — explicitly set it */
+.dark input[type="search"],
+.dark input[type="text"] {
+  -webkit-text-fill-color: #ffffff;
+  color: #ffffff;
+}
+
+/* Light mode */
+:not(.dark) input[type="search"],
+:not(.dark) input[type="text"] {
+  -webkit-text-fill-color: #0f172a;
+  color: #0f172a;
+}
+
+/* ── CATEGORY GRID HOVER ───────────────────────────────────────────────────
+   scale-102 is not a default Tailwind value; using inline transform instead
+   But we need this for the category card active ring
+*/
+.category-card-active {
+  transform: scale(1.05);
+}

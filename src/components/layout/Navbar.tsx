@@ -245,12 +245,14 @@ export default function Navbar() {
             <form onSubmit={handleSearchSubmit} className="relative">
               <input
                 ref={searchInputRef}
-                type="text"
+                type="search"
+                autoComplete="off"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onFocus={() => query.trim().length >= 2 && setShowDropdown(true)}
                 placeholder={placeholderText || "Buscar películas, series..."}
-                className={`w-full text-xs pl-10 pr-9 py-2.5 rounded-full border outline-none transition-all shadow-inner cursor-text ${
+                style={{ fontSize: '16px' }} /* prevents iOS auto-zoom on focus */
+                className={`w-full pl-10 pr-9 py-2.5 rounded-full border outline-none transition-all shadow-inner cursor-text font-medium ${
                   isOverHero
                     ? 'bg-black/40 backdrop-blur-md text-white placeholder-gray-300 border-white/25 focus:border-pastel-cyan focus:ring-1 focus:ring-pastel-cyan'
                     : 'bg-slate-100/90 dark:bg-[#020b18]/80 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-400 border border-slate-200 dark:border-gray-800 focus:border-pastel-purple dark:focus:border-blue-500 focus:ring-1 focus:ring-pastel-purple'
@@ -258,7 +260,7 @@ export default function Navbar() {
               />
               <button
                 type="submit"
-                className={`absolute left-3 top-2.5 transition-colors cursor-pointer ${
+                className={`absolute left-3 top-1/2 -translate-y-1/2 transition-colors cursor-pointer ${
                   isOverHero
                     ? 'text-gray-300 hover:text-pastel-cyan'
                     : 'text-slate-400 dark:text-gray-400 hover:text-pastel-purple dark:hover:text-blue-400'
@@ -268,7 +270,7 @@ export default function Navbar() {
                 <Search className="w-4 h-4" />
               </button>
               {loading && (
-                <div className="absolute right-9 top-2.5">
+                <div className="absolute right-9 top-1/2 -translate-y-1/2">
                   <Loader2 className={`w-4 h-4 animate-spin ${isOverHero ? 'text-pastel-cyan' : 'text-pastel-purple dark:text-blue-400'}`} />
                 </div>
               )}
@@ -280,7 +282,7 @@ export default function Navbar() {
                     setShowDropdown(false);
                     if (searchInputRef.current) searchInputRef.current.focus();
                   }}
-                  className={`absolute right-3 top-2.5 transition-colors cursor-pointer ${
+                  className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors cursor-pointer ${
                     isOverHero
                       ? 'text-gray-300 hover:text-white'
                       : 'text-slate-400 dark:text-gray-400 hover:text-slate-700 dark:hover:text-white'
@@ -291,14 +293,25 @@ export default function Navbar() {
               )}
             </form>
 
-            {/* Instant Search Dropdown (Adapted for Desktop & iPad screens) */}
+
+            {/* Instant Search Dropdown — funciona bien en Desktop, iPad y Tablet */}
             <AnimatePresence>
               {showDropdown && results.length > 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 10 }}
-                  className="absolute top-full mt-2 w-[420px] md:w-[480px] lg:w-[520px] max-w-[90vw] right-0 bg-white/98 dark:bg-[#051226]/98 backdrop-blur-xl border border-pastel-purple/30 dark:border-blue-900/50 rounded-2xl shadow-2xl overflow-hidden z-50 divide-y divide-slate-100 dark:divide-gray-800/60"
+                  className="absolute top-full mt-2 bg-white/98 dark:bg-[#051226]/98 backdrop-blur-xl border border-pastel-purple/30 dark:border-blue-900/50 rounded-2xl shadow-2xl overflow-hidden z-[9999] divide-y divide-slate-100 dark:divide-gray-800/60"
+                  style={{
+                    /* 
+                     * Smart positioning: 
+                     * - Start from left edge of the search box (left:0)
+                     * - Width: 480px on desktop, or 90vw on smaller screens, whichever is smaller
+                     * - This prevents the dropdown from going off-screen on iPad
+                     */
+                    left: 0,
+                    width: 'min(520px, calc(100vw - 2rem))',
+                  }}
                 >
                   <div className="p-2 max-h-[70vh] overflow-y-auto space-y-1 scrollbar-thin">
                     {results.map((item: any) => {
@@ -359,6 +372,7 @@ export default function Navbar() {
                 </motion.div>
               )}
             </AnimatePresence>
+
           </div>
 
           {/* Action Buttons Right */}
@@ -507,32 +521,55 @@ export default function Navbar() {
 
             {/* Input de Búsqueda Móvil */}
             <form onSubmit={handleSearchSubmit} className="mt-3 relative">
+              {/* Search icon — positioned OUTSIDE the input flow so it doesn't overlap the text */}
+              <div className="absolute left-3.5 top-1/2 -translate-y-1/2 z-10 pointer-events-none">
+                <Search className="w-5 h-5 text-purple-500 dark:text-blue-400" />
+              </div>
+
               <input
-                type="text"
+                type="search"
                 autoFocus
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck="false"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Escribe el nombre de la película o serie..."
-                className="w-full bg-white dark:bg-[#051226] text-slate-900 dark:text-white text-sm pl-11 pr-10 py-3 rounded-2xl border border-slate-300 dark:border-blue-900/50 focus:border-pastel-purple outline-none cursor-text shadow-inner"
+                style={{ fontSize: '16px' }} /* Prevents iOS auto-zoom on focus */
+                className={`
+                  w-full rounded-2xl border outline-none transition-all
+                  pl-11 py-3.5 font-medium
+                  ${query ? 'pr-10' : 'pr-4'}
+                  bg-white dark:bg-[#051226]
+                  text-slate-900 dark:text-white
+                  placeholder-slate-400 dark:placeholder-gray-500
+                  border-slate-300 dark:border-blue-900/60
+                  focus:border-purple-500 dark:focus:border-blue-500
+                  focus:ring-2 focus:ring-purple-500/20 dark:focus:ring-blue-500/20
+                  shadow-inner
+                `}
               />
-              <button type="submit" className="absolute left-3.5 top-3.5 text-slate-400 dark:text-gray-400">
-                <Search className="w-4 h-4" />
-              </button>
+
+              {/* Loading spinner */}
               {loading && (
-                <div className="absolute right-10 top-3.5">
-                  <Loader2 className="w-4 h-4 text-pastel-purple dark:text-blue-400 animate-spin" />
+                <div className="absolute right-10 top-1/2 -translate-y-1/2 z-10">
+                  <Loader2 className="w-4 h-4 text-purple-500 dark:text-blue-400 animate-spin" />
                 </div>
               )}
+
+              {/* Clear button */}
               {query && (
                 <button
                   type="button"
                   onClick={() => setQuery('')}
-                  className="absolute right-3.5 top-3 text-slate-400 dark:text-gray-400 hover:text-slate-700 dark:hover:text-white cursor-pointer"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 z-10 p-1 rounded-full bg-slate-200 dark:bg-gray-700 text-slate-500 dark:text-gray-400 hover:text-slate-700 dark:hover:text-white cursor-pointer transition-colors"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4" />
                 </button>
               )}
             </form>
+
 
             {/* Chips de sugerencias rápidas cuando no hay búsqueda activa */}
             {query.trim().length < 2 && (

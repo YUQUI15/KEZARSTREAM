@@ -10,6 +10,7 @@ import {
 } from '@/lib/tmdb';
 import HeroSlider from '@/components/ui/HeroSlider';
 import Carousel from '@/components/ui/Carousel';
+import CategoriesGrid from '@/components/ui/CategoriesGrid';
 
 export const revalidate = 3600;
 
@@ -60,6 +61,12 @@ export default async function Home() {
           items={nowPlayingMovies || []}
           cardType="poster"
         />
+
+        {/* ── EXPLORAR POR CATEGORÍA ────────────────────────────────────── */}
+        {/* Sección con TODOS los géneros de TMDB: Comedia, Terror, Infantil, etc. */}
+        <div className="py-4">
+          <CategoriesGrid />
+        </div>
 
         {/* 2. TOP 10 Películas Hoy */}
         <div className="py-2">

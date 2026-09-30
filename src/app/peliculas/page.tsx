@@ -1,16 +1,35 @@
-import { getMovies, getTrending } from '@/lib/tmdb';
+import { getMovies, getMoviesByGenre, getTrending } from '@/lib/tmdb';
 import HeroSlider from '@/components/ui/HeroSlider';
 import Carousel from '@/components/ui/Carousel';
+import CategoriesGrid from '@/components/ui/CategoriesGrid';
 import { Film } from 'lucide-react';
+import Link from 'next/link';
 
 export const revalidate = 3600;
 
-export default async function PeliculasPage() {
-  const [nowPlaying, popular, topRated, trendingWeek] = await Promise.all([
+// Mapeo de IDs de género a nombres en español
+const GENRE_NAMES: Record<number, string> = {
+  28: 'Acción', 35: 'Comedia', 27: 'Terror', 18: 'Drama',
+  12: 'Aventura', 16: 'Animación', 10751: 'Familiar', 14: 'Fantasía',
+  878: 'Ciencia Ficción', 53: 'Suspenso', 10749: 'Romance', 80: 'Crimen',
+  99: 'Documental', 36: 'Historia', 10752: 'Bélica', 37: 'Western',
+  10770: 'Película de TV', 9648: 'Misterio',
+};
+
+interface Props {
+  searchParams: { genre?: string };
+}
+
+export default async function PeliculasPage({ searchParams }: Props) {
+  const genreId = searchParams.genre ? parseInt(searchParams.genre) : null;
+  const genreName = genreId ? (GENRE_NAMES[genreId] || 'Categoría') : null;
+
+  const [nowPlaying, popular, topRated, trendingWeek, genreMovies] = await Promise.all([
     getMovies('now_playing'),
     getMovies('popular'),
     getMovies('top_rated'),
-    getTrending('movie', 'week')
+    getTrending('movie', 'week'),
+    genreId ? getMoviesByGenre(genreId) : Promise.resolve([]),
   ]);
 
   return (
@@ -24,10 +43,44 @@ export default async function PeliculasPage() {
           <span className="uppercase tracking-wider">Catálogo Completo de Películas</span>
         </div>
 
-        <Carousel title="En Cartelera & Estrenos Recientes" items={nowPlaying || []} cardType="poster" />
-        <Carousel title="Películas Más Populares" items={popular || []} cardType="poster" />
-        <Carousel title="Tendencias de la Semana" items={trendingWeek || []} cardType="poster" />
-        <Carousel title="Aclamadas y Mejor Calificadas" items={topRated || []} cardType="poster" />
+        {/* Genre filter result */}
+        {genreId && genreMovies.length > 0 && (
+          <div className="space-y-3">
+            {/* Breadcrumb chip */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <Link
+                href="/peliculas"
+                className="text-xs text-slate-500 dark:text-gray-400 hover:text-purple-600 dark:hover:text-blue-400 transition-colors"
+              >
+                ← Todas las películas
+              </Link>
+              <span className="text-slate-300 dark:text-gray-700">/</span>
+              <span className="text-xs font-bold px-3 py-1 rounded-full bg-pastel-gradient text-slate-950">
+                🎬 {genreName}
+              </span>
+            </div>
+            <Carousel
+              title={`Películas de ${genreName}`}
+              items={genreMovies}
+              cardType="poster"
+            />
+          </div>
+        )}
+
+        {/* Standard carousels when no genre filter active */}
+        {!genreId && (
+          <>
+            <Carousel title="En Cartelera &amp; Estrenos Recientes" items={nowPlaying || []} cardType="poster" />
+            <Carousel title="Películas Más Populares" items={popular || []} cardType="poster" />
+            <Carousel title="Tendencias de la Semana" items={trendingWeek || []} cardType="poster" />
+            <Carousel title="Aclamadas y Mejor Calificadas" items={topRated || []} cardType="poster" />
+          </>
+        )}
+
+        {/* Categories grid — always visible */}
+        <div className="py-4">
+          <CategoriesGrid />
+        </div>
       </div>
     </main>
   );
