@@ -243,13 +243,13 @@ export default function Navbar() {
           {/* Tablet & Desktop Search Bar with Animated Placeholder & Dropdown */}
           <div 
             ref={searchBoxRef} 
-            className={`hidden md:block relative transition-[width] duration-500 ease-in-out ${
-              query || showDropdown 
-                ? 'w-[400px] lg:w-[520px]' 
-                : 'w-[220px] lg:w-[260px] focus-within:w-[400px] focus-within:lg:w-[520px]'
+            className={`hidden md:block relative transition-[width] duration-300 ease-out ${
+              query.length > 0 || showDropdown
+                ? 'w-[400px] lg:w-[500px]' 
+                : 'w-[200px] lg:w-[240px] focus-within:w-[400px] focus-within:lg:w-[500px]'
             } mx-2`}
           >
-            <form onSubmit={handleSearchSubmit} className="relative w-full">
+            <form onSubmit={handleSearchSubmit} className="relative w-full h-full">
               <input
                 ref={searchInputRef}
                 type="search"
@@ -257,28 +257,20 @@ export default function Navbar() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onFocus={() => query.trim().length >= 2 && setShowDropdown(true)}
-                placeholder={placeholderText || "Buscar películas..."}
-                style={{ fontSize: '16px' }}
-                className={`w-full pl-10 pr-9 py-2.5 rounded-full border outline-none transition-all shadow-inner cursor-text font-medium ${
-                  isOverHero
-                    ? 'bg-black/40 backdrop-blur-md text-white placeholder-gray-300 border-white/25 focus:border-pastel-cyan focus:ring-1 focus:ring-pastel-cyan'
-                    : 'bg-slate-100/90 dark:bg-[#020b18]/80 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-400 border border-slate-200 dark:border-gray-800 focus:border-pastel-purple dark:focus:border-blue-500 focus:ring-1 focus:ring-pastel-purple'
-                }`}
+                placeholder={placeholderText || "Buscar..."}
+                style={{ fontSize: '16px', color: isOverHero ? 'white' : 'inherit' }}
+                className={`w-full pl-10 pr-9 py-2.5 rounded-full outline-none transition-all shadow-inner font-medium bg-black/20 dark:bg-black/40 border border-white/20 focus:border-pastel-cyan focus:ring-1 focus:ring-pastel-cyan placeholder-gray-400 dark:placeholder-gray-400 text-slate-900 dark:text-white`}
               />
               <button
                 type="submit"
-                className={`absolute left-3 top-1/2 -translate-y-1/2 transition-colors cursor-pointer ${
-                  isOverHero
-                    ? 'text-gray-300 hover:text-pastel-cyan'
-                    : 'text-slate-400 dark:text-gray-400 hover:text-pastel-purple dark:hover:text-blue-400'
-                }`}
+                className="absolute left-3 top-1/2 -translate-y-1/2 transition-colors cursor-pointer text-gray-500 dark:text-gray-400 hover:text-pastel-purple dark:hover:text-pastel-cyan"
                 title="Buscar"
               >
                 <Search className="w-4 h-4" />
               </button>
               {loading && (
                 <div className="absolute right-9 top-1/2 -translate-y-1/2">
-                  <Loader2 className={`w-4 h-4 animate-spin ${isOverHero ? 'text-pastel-cyan' : 'text-pastel-purple dark:text-blue-400'}`} />
+                  <Loader2 className="w-4 h-4 animate-spin text-pastel-cyan" />
                 </div>
               )}
               {query && (
@@ -289,11 +281,7 @@ export default function Navbar() {
                     setShowDropdown(false);
                     if (searchInputRef.current) searchInputRef.current.focus();
                   }}
-                  className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors cursor-pointer ${
-                    isOverHero
-                      ? 'text-gray-300 hover:text-white'
-                      : 'text-slate-400 dark:text-gray-400 hover:text-slate-700 dark:hover:text-white'
-                  }`}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors cursor-pointer text-gray-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white"
                 >
                   <X className="w-4 h-4" />
                 </button>
