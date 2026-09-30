@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   Zap,
   RotateCw,
@@ -12,14 +12,31 @@ import {
   Loader2,
   X,
   Crown,
-  Star,
   Languages,
   Subtitles,
-  HelpCircle,
   CheckCircle2,
-  Tv,
-  Film
+  WifiOff,
+  RefreshCcw,
 } from 'lucide-react';
+
+// DNS preconnect domains — injected into <head> once on mount for faster iframe connections
+const PRECONNECT_DOMAINS = [
+  'https://play.modocine.com',
+  'https://nsrplay.space',
+  'https://unlimplay.com',
+  'https://multiembed-clean.wptheme.site',
+  'https://embed69.org',
+  'https://vidlink.pro',
+  'https://autoembed.co',
+  'https://vidsrc.pm',
+  'https://vidsrc.in',
+  'https://player.videasy.net',
+  'https://www.2embed.cc',
+  'https://multiembed.mov',
+  'https://embed.smashystream.com',
+  'https://vidsrc.net',
+];
+
 
 interface VideoPlayerProps {
   type: 'movie' | 'tv' | 'pelicula' | 'serie';
@@ -327,8 +344,12 @@ export default function VideoPlayer({
   const [reported, setReported] = useState<boolean>(false);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [loadError, setLoadError] = useState<boolean>(false);
+  const [loadTimeout, setLoadTimeout] = useState<boolean>(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const loadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isMovie = type === 'movie' || type === 'pelicula';
   const currentServer = SERVERS.find((s) => s.id === selectedServer) || SERVERS[0];
@@ -338,7 +359,46 @@ export default function VideoPlayer({
     thumb: posterUrl
   });
 
-  // Listener para estado nativo de Fullscreen
+  // ── DNS Preconnect injection ─────────────────────────────────────────────
+  // Adds <link rel="preconnect"> for every streaming domain so the browser
+  // resolves DNS before the user even picks a server, reducing initial latency.
+  useEffect(() => {
+    const injected: HTMLLinkElement[] = [];
+    PRECONNECT_DOMAINS.forEach((origin) => {
+      if (!document.querySelector(`link[rel="preconnect"][href="${origin}"]`)) {
+        const el = document.createElement('link');
+        el.rel = 'preconnect';
+        el.href = origin;
+        el.crossOrigin = 'anonymous';
+        document.head.appendChild(el);
+        injected.push(el);
+      }
+    });
+    return () => {
+      // Cleanup on unmount
+      injected.forEach((el) => el.remove());
+    };
+  }, []);
+
+  // ── Load timeout detector ────────────────────────────────────────────────
+  // If the iframe hasn't fired onLoad within 30 seconds, show a friendly message
+  // so the user knows to try another server instead of waiting forever.
+  useEffect(() => {
+    setIsLoading(true);
+    setLoadError(false);
+    setLoadTimeout(false);
+
+    loadTimerRef.current = setTimeout(() => {
+      setLoadTimeout(true);
+      setIsLoading(false);
+    }, 30_000); // 30 s
+
+    return () => {
+      if (loadTimerRef.current) clearTimeout(loadTimerRef.current);
+    };
+  }, [selectedServer, reloadKey]);
+
+  // ── Listener para estado nativo de Fullscreen ────────────────────────────
   useEffect(() => {
     const handleFullscreenChange = () => {
       const isCurrentlyFullscreen = Boolean(
@@ -362,6 +422,8 @@ export default function VideoPlayer({
       document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
     };
   }, []);
+
+
 
   // Función nativa para activar pantalla completa total
   const toggleFullscreen = async () => {
@@ -458,6 +520,43 @@ export default function VideoPlayer({
           </div>
         )}
 
+        {/* Timeout / Server Error Overlay */}
+        {!isLoading && loadTimeout && (
+          <div className="absolute inset-0 z-20 bg-[#000814]/97 flex flex-col items-center justify-center gap-4 p-6 text-center">
+            <div className="w-14 h-14 rounded-full bg-amber-500/20 flex items-center justify-center">
+              <WifiOff className="w-7 h-7 text-amber-400" />
+            </div>
+            <div className="space-y-2">
+              <p className="text-base font-bold text-white">El servidor tardó demasiado en responder</p>
+              <p className="text-xs text-gray-400 max-w-xs">
+                Esto puede ocurrir si el servidor está temporalmente sobrecargado o si el título no está disponible en este servidor.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2 justify-center">
+              <button
+                onClick={handleReload}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all cursor-pointer active:scale-95"
+              >
+                <RefreshCcw className="w-3.5 h-3.5" />
+                Reintentar
+              </button>
+              {/* Auto-suggest next server */}
+              {(() => {
+                const nextSameTab = SERVERS.find(s => s.category === currentServer.category && s.id !== selectedServer && s.rank === currentServer.rank + 1);
+                return nextSameTab ? (
+                  <button
+                    onClick={() => handleServerChange(nextSameTab.id)}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold transition-all cursor-pointer active:scale-95"
+                  >
+                    <Zap className="w-3.5 h-3.5" />
+                    Probar {nextSameTab.name.split(' ')[0]}
+                  </button>
+                ) : null;
+              })()}
+            </div>
+          </div>
+        )}
+
         {/* Floating exit button for Fullscreen on mobile & tablets */}
         {isFullscreen && (
           <button
@@ -470,16 +569,56 @@ export default function VideoPlayer({
           </button>
         )}
 
-        {/* Video iframe */}
+        {/* 
+          VIDEO IFRAME — Optimizaciones anti-buffering:
+          ────────────────────────────────────────────────────────────────────
+          1. referrerPolicy="no-referrer-when-downgrade"
+             → Envía la URL completa como referrer a servidores HTTPS.
+             → CRÍTICO: la mayoría de reproductores de streaming verifican el
+               referrer para decidir si permiten la carga del video.
+             → "origin" (el valor anterior) solo enviaba el dominio base, lo
+               cual es insuficiente y causaba que varios servidores bloquearan
+               la reproducción mostrando pantalla negra o cortando el stream.
+          
+          2. allow="autoplay *; fullscreen *; encrypted-media *; ..."
+             → El wildcard (*) permite estos permisos para CUALQUIER origen
+               dentro del iframe, no solo same-origin.
+             → Sin esto, la reproducción automática y el cifrado DRM no
+               funcionan en navegadores modernos (Chrome 66+, Safari 15+).
+          
+          3. loading="eager"
+             → Fuerza la carga inmediata del iframe sin lazy-loading.
+             → Sin esto, el iframe puede esperar hasta que el usuario haga
+               scroll hacia él para comenzar a cargar.
+          
+          4. DNS preconnect (en useEffect arriba)
+             → Resuelve los DNS de todos los servidores de streaming antes
+               de que el usuario seleccione uno, reduciendo la latencia de
+               conexión inicial de ~200-500ms a ~0ms.
+        */}
         <iframe
+          ref={iframeRef}
           key={`${selectedServer}-${reloadKey}-${id}-${season}-${episode}`}
           src={embedUrl}
-          onLoad={() => setIsLoading(false)}
-          className="w-full h-full absolute inset-0"
+          onLoad={() => {
+            if (loadTimerRef.current) clearTimeout(loadTimerRef.current);
+            setIsLoading(false);
+            setLoadTimeout(false);
+            setLoadError(false);
+          }}
+          onError={() => {
+            if (loadTimerRef.current) clearTimeout(loadTimerRef.current);
+            setIsLoading(false);
+            setLoadError(true);
+          }}
+          className="w-full h-full absolute inset-0 border-0"
           frameBorder="0"
           allowFullScreen
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-          referrerPolicy="origin"
+          loading="eager"
+          allow="autoplay *; fullscreen *; encrypted-media *; accelerometer *; gyroscope *; picture-in-picture *; web-share *; clipboard-write *"
+          referrerPolicy="no-referrer-when-downgrade"
+          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-presentation allow-top-navigation-by-user-activation"
+          title={`${title} — ${currentServer.name}`}
         />
 
         {/* Protection watermark badge */}
@@ -488,6 +627,7 @@ export default function VideoPlayer({
           <span>KEZARSTREAM {currentServer.category === 'latino' ? 'Latino' : 'Sub'}</span>
         </div>
       </div>
+
 
       {/* Action Bar: Estado activo, Pantalla Completa, Recargar, Reportar */}
       <div className="flex flex-wrap items-center justify-between gap-3 bg-white/90 dark:bg-[#051226]/90 backdrop-blur-md px-4 py-3 rounded-xl border border-pastel-purple/30 dark:border-blue-900/40 text-xs shadow-sm">
