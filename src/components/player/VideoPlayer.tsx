@@ -710,21 +710,18 @@ export default function VideoPlayer({
           sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-presentation allow-top-navigation-by-user-activation"
           title={`${title} — ${currentServer.name}`}
         />
-
-        {/* Protection watermark badge — Moved to TOP-LEFT so it doesn't block player controls */}
-        <div className="pointer-events-none absolute top-4 left-4 z-10 flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10 text-[10px] text-white/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
-          <span className="font-bold tracking-wider">KEZARSTREAM {currentServer.category === 'latino' ? 'LATINO' : 'SUB'}</span>
-        </div>
       </div>
 
-
       {/* Action Bar: Estado activo, Controles de Zoom, Pantalla Completa, Volumen */}
-      <div className="flex flex-col xl:flex-row items-center justify-between gap-4 bg-white/90 dark:bg-[#051226]/90 backdrop-blur-md px-4 py-3 rounded-xl border border-pastel-purple/30 dark:border-blue-900/40 text-xs shadow-sm relative">
+      <div className="flex flex-col xl:flex-row items-center justify-between gap-4 bg-white/90 dark:bg-[#051226]/90 backdrop-blur-md px-4 py-3 rounded-xl border border-pastel-purple/30 dark:border-blue-900/40 text-xs shadow-sm relative z-50">
         
         {/* Left: Info del servidor activo */}
         <div className="flex flex-wrap items-center justify-center xl:justify-start gap-2 text-slate-700 dark:text-gray-300 w-full xl:w-auto">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse"></span>
+          <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800/50">
+            <ShieldCheck className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+            <span className="font-black text-[10px] tracking-wider text-blue-700 dark:text-blue-300">KEZARSTREAM</span>
+          </div>
+          <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse ml-1"></span>
           <span>Reproduciendo en: <strong className="text-purple-700 dark:text-blue-400">{currentServer.name}</strong></span>
           <span className={`px-2 py-0.5 rounded-full font-bold text-[10px] ${
             currentServer.category === 'latino' ? 'bg-[#C19ADE] text-purple-950' : 'bg-[#6FCFEB] text-slate-950'

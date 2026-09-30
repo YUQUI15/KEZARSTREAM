@@ -243,13 +243,16 @@ export default function Navbar() {
           {/* Tablet & Desktop Search Bar with Animated Placeholder & Dropdown */}
           <div 
             ref={searchBoxRef} 
-            className={`hidden md:block relative transition-[width] duration-300 ease-out ${
-              query.length > 0 || showDropdown
-                ? 'w-[400px] lg:w-[500px]' 
-                : 'w-[200px] lg:w-[240px] focus-within:w-[400px] focus-within:lg:w-[500px]'
-            } mx-2`}
+            className="hidden md:flex relative h-10 w-[200px] lg:w-[240px] mx-2 z-50 items-center justify-end"
           >
-            <form onSubmit={handleSearchSubmit} className="relative w-full h-full">
+            <form 
+              onSubmit={handleSearchSubmit} 
+              className={`absolute right-0 transition-all duration-300 ease-out origin-right ${
+                query.length > 0 || showDropdown
+                  ? 'w-[350px] lg:w-[450px]' 
+                  : 'w-[200px] lg:w-[240px] focus-within:w-[350px] focus-within:lg:w-[450px]'
+              }`}
+            >
               <input
                 ref={searchInputRef}
                 type="search"
@@ -258,8 +261,8 @@ export default function Navbar() {
                 onChange={(e) => setQuery(e.target.value)}
                 onFocus={() => query.trim().length >= 2 && setShowDropdown(true)}
                 placeholder={placeholderText || "Buscar..."}
-                style={{ fontSize: '16px', color: isOverHero ? 'white' : 'inherit' }}
-                className={`w-full pl-10 pr-9 py-2.5 rounded-full outline-none transition-all shadow-inner font-medium bg-black/20 dark:bg-black/40 border border-white/20 focus:border-pastel-cyan focus:ring-1 focus:ring-pastel-cyan placeholder-gray-400 dark:placeholder-gray-400 text-slate-900 dark:text-white`}
+                style={{ fontSize: '16px' }}
+                className={`w-full pl-10 pr-9 py-2.5 rounded-full outline-none transition-all shadow-xl font-medium bg-slate-100/95 dark:bg-[#061224]/95 backdrop-blur-md border border-slate-300 dark:border-blue-900/50 focus:border-pastel-cyan focus:ring-1 focus:ring-pastel-cyan placeholder-gray-500 dark:placeholder-gray-400 text-slate-900 dark:text-white`}
               />
               <button
                 type="submit"
