@@ -17,6 +17,10 @@ import {
   CheckCircle2,
   WifiOff,
   RefreshCcw,
+  ZoomIn,
+  ZoomOut,
+  Volume2,
+  Info,
 } from 'lucide-react';
 
 // DNS preconnect domains — injected into <head> once on mount for faster iframe connections
@@ -347,9 +351,25 @@ export default function VideoPlayer({
   const [loadError, setLoadError] = useState<boolean>(false);
   const [loadTimeout, setLoadTimeout] = useState<boolean>(false);
 
+  // ── Zoom state (pinch-to-zoom + botones) ────────────────────────────────
+  const [zoomLevel, setZoomLevel] = useState<number>(1);    // 1 = normal, 1.5 = 150%, etc.
+  const ZOOM_MIN = 1;
+  const ZOOM_MAX = 3;
+  const ZOOM_STEP = 0.25;
+
+  // ── Volume Boost state ───────────────────────────────────────────────────
+  // Note: We can't control the iframe's internal volume via JS (cross-origin),
+  // but we show a persistent tip to the user and provide a system-volume shortcut.
+  const [showVolumeInfo, setShowVolumeInfo] = useState<boolean>(false);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const loadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // ── Pinch-to-zoom touch tracking ────────────────────────────────────────
+  const lastPinchDistRef = useRef<number | null>(null);
+  const lastZoomRef = useRef<number>(1);
+
 
   const isMovie = type === 'movie' || type === 'pelicula';
   const currentServer = SERVERS.find((s) => s.id === selectedServer) || SERVERS[0];
@@ -408,6 +428,11 @@ export default function VideoPlayer({
         (document as any).msFullscreenElement
       );
       setIsFullscreen(isCurrentlyFullscreen);
+      // Reset zoom when exiting fullscreen
+      if (!isCurrentlyFullscreen) {
+        setZoomLevel(1);
+        lastZoomRef.current = 1;
+      }
     };
 
     document.addEventListener('fullscreenchange', handleFullscreenChange);
@@ -422,6 +447,64 @@ export default function VideoPlayer({
       document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
     };
   }, []);
+
+  // ── Pinch-to-zoom touch handlers ────────────────────────────────────────
+  // Captures 2-finger pinch gestures on the video container to scale the iframe.
+  // This mirrors YouTube's pinch-to-zoom behavior on mobile.
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const getDistance = (touches: TouchList) => {
+      const dx = touches[0].clientX - touches[1].clientX;
+      const dy = touches[0].clientY - touches[1].clientY;
+      return Math.sqrt(dx * dx + dy * dy);
+    };
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        lastPinchDistRef.current = getDistance(e.touches);
+        lastZoomRef.current = zoomLevel;
+      }
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 2 && lastPinchDistRef.current !== null) {
+        e.preventDefault(); // Prevent page scroll during pinch
+        const newDist = getDistance(e.touches);
+        const scale = newDist / lastPinchDistRef.current;
+        const newZoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, lastZoomRef.current * scale));
+        setZoomLevel(parseFloat(newZoom.toFixed(2)));
+      }
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      if (e.touches.length < 2) {
+        lastPinchDistRef.current = null;
+      }
+    };
+
+    el.addEventListener('touchstart', onTouchStart, { passive: false });
+    el.addEventListener('touchmove', onTouchMove, { passive: false });
+    el.addEventListener('touchend', onTouchEnd);
+
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchmove', onTouchMove);
+      el.removeEventListener('touchend', onTouchEnd);
+    };
+  }, [zoomLevel]); // re-register when zoom changes so lastZoomRef is fresh
+
+  // ── Zoom helper functions ────────────────────────────────────────────────
+  const zoomIn = useCallback(() =>
+    setZoomLevel(prev => parseFloat(Math.min(ZOOM_MAX, prev + ZOOM_STEP).toFixed(2))), []);
+  const zoomOut = useCallback(() =>
+    setZoomLevel(prev => parseFloat(Math.max(ZOOM_MIN, prev - ZOOM_STEP).toFixed(2))), []);
+  const zoomFit = useCallback(() => setZoomLevel(1.0), []);
+  // "Fill" preset: 1.78 makes 16:9 content fill common 18:9 phone screens
+  const zoomFill = useCallback(() => setZoomLevel(1.5), []);
+
+
 
 
 
@@ -474,6 +557,8 @@ export default function VideoPlayer({
     if (serverId !== selectedServer) {
       setIsLoading(true);
       setSelectedServer(serverId);
+      setZoomLevel(1);
+      lastZoomRef.current = 1;
     }
   };
 
@@ -612,6 +697,11 @@ export default function VideoPlayer({
             setLoadError(true);
           }}
           className="w-full h-full absolute inset-0 border-0"
+          style={{
+            transform: `scale(${zoomLevel})`,
+            transformOrigin: 'center center',
+            transition: 'transform 0.2s cubic-bezier(0.2, 0, 0, 1)'
+          }}
           frameBorder="0"
           allowFullScreen
           loading="eager"
@@ -621,19 +711,19 @@ export default function VideoPlayer({
           title={`${title} — ${currentServer.name}`}
         />
 
-        {/* Protection watermark badge */}
-        <div className="pointer-events-none absolute bottom-3 right-3 z-10 flex items-center gap-1.5 bg-black/80 backdrop-blur-md px-3 py-1 rounded-lg border border-white/10 text-[11px] text-white/80 opacity-70 group-hover:opacity-100 transition-opacity">
+        {/* Protection watermark badge — Moved to TOP-LEFT so it doesn't block player controls */}
+        <div className="pointer-events-none absolute top-4 left-4 z-10 flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10 text-[10px] text-white/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
-          <span>KEZARSTREAM {currentServer.category === 'latino' ? 'Latino' : 'Sub'}</span>
+          <span className="font-bold tracking-wider">KEZARSTREAM {currentServer.category === 'latino' ? 'LATINO' : 'SUB'}</span>
         </div>
       </div>
 
 
-      {/* Action Bar: Estado activo, Pantalla Completa, Recargar, Reportar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-white/90 dark:bg-[#051226]/90 backdrop-blur-md px-4 py-3 rounded-xl border border-pastel-purple/30 dark:border-blue-900/40 text-xs shadow-sm">
+      {/* Action Bar: Estado activo, Controles de Zoom, Pantalla Completa, Volumen */}
+      <div className="flex flex-col xl:flex-row items-center justify-between gap-4 bg-white/90 dark:bg-[#051226]/90 backdrop-blur-md px-4 py-3 rounded-xl border border-pastel-purple/30 dark:border-blue-900/40 text-xs shadow-sm relative">
         
-        {/* Info del servidor activo */}
-        <div className="flex flex-wrap items-center gap-2 text-slate-700 dark:text-gray-300">
+        {/* Left: Info del servidor activo */}
+        <div className="flex flex-wrap items-center justify-center xl:justify-start gap-2 text-slate-700 dark:text-gray-300 w-full xl:w-auto">
           <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse"></span>
           <span>Reproduciendo en: <strong className="text-purple-700 dark:text-blue-400">{currentServer.name}</strong></span>
           <span className={`px-2 py-0.5 rounded-full font-bold text-[10px] ${
@@ -646,9 +736,60 @@ export default function VideoPlayer({
           </span>
         </div>
 
-        {/* Botonera de acciones */}
-        <div className="flex flex-wrap items-center gap-2">
+        {/* Right: Controles */}
+        <div className="flex flex-wrap items-center justify-center gap-2 w-full xl:w-auto">
           
+          {/* ZOOM CONTROLS */}
+          <div className="flex items-center bg-slate-100 dark:bg-blue-950/40 rounded-lg p-0.5 border border-slate-200 dark:border-blue-800/40 shadow-inner">
+            <button
+              onClick={zoomOut}
+              className="p-1.5 text-slate-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-blue-400 hover:bg-white dark:hover:bg-blue-900/60 rounded-md transition-all cursor-pointer active:scale-95"
+              title="Reducir video"
+            >
+              <ZoomOut className="w-4 h-4" />
+            </button>
+            <div className="px-2 flex flex-col items-center justify-center leading-none">
+              <span className="text-[10px] font-bold text-slate-700 dark:text-gray-300 min-w-[32px] text-center">
+                {Math.round(zoomLevel * 100)}%
+              </span>
+              <button
+                onClick={zoomFit}
+                className="text-[8px] font-bold uppercase tracking-widest text-purple-600 dark:text-blue-400 hover:underline cursor-pointer opacity-80 hover:opacity-100"
+                title="Restaurar tamaño original"
+              >
+                Reset
+              </button>
+            </div>
+            <button
+              onClick={zoomIn}
+              className="p-1.5 text-slate-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-blue-400 hover:bg-white dark:hover:bg-blue-900/60 rounded-md transition-all cursor-pointer active:scale-95"
+              title="Ampliar video"
+            >
+              <ZoomIn className="w-4 h-4" />
+            </button>
+            <button
+              onClick={zoomFill}
+              className="ml-1 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-700 dark:text-gray-200 hover:text-purple-600 dark:hover:text-blue-400 hover:bg-white dark:hover:bg-blue-900/60 rounded-md transition-all cursor-pointer border-l border-slate-200 dark:border-blue-800/40 active:scale-95"
+              title="Llenar pantalla (eliminar bordes negros de películas)"
+            >
+              Llenar
+            </button>
+          </div>
+
+          {/* VOLUMEN INFO BUTTON */}
+          <button
+            onClick={() => setShowVolumeInfo(!showVolumeInfo)}
+            className={`flex items-center gap-1 p-1.5 px-2.5 rounded-lg transition-all border cursor-pointer font-bold active:scale-95 ${
+              showVolumeInfo 
+                ? 'bg-purple-100 border-purple-300 text-purple-700 dark:bg-blue-900/60 dark:border-blue-500/50 dark:text-blue-300' 
+                : 'bg-slate-100 dark:bg-blue-950/60 border-slate-200 dark:border-blue-800/50 text-slate-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-blue-400 hover:bg-slate-200 dark:hover:bg-blue-900/40'
+            }`}
+            title="¿Audio muy bajo?"
+          >
+            <Volume2 className="w-4 h-4" />
+            <span className="hidden sm:inline">Volumen</span>
+          </button>
+
           {/* BOTÓN PANTALLA COMPLETA TOTAL (100% Pantalla) */}
           <button
             onClick={toggleFullscreen}
@@ -658,12 +799,12 @@ export default function VideoPlayer({
             {isFullscreen ? (
               <>
                 <Minimize className="w-3.5 h-3.5" />
-                <span>Salir de Pantalla Completa</span>
+                <span className="hidden sm:inline">Salir Pantalla Completa</span>
               </>
             ) : (
               <>
                 <Maximize className="w-3.5 h-3.5" />
-                <span>Pantalla Completa</span>
+                <span className="hidden sm:inline">Pantalla Completa</span>
               </>
             )}
           </button>
@@ -671,29 +812,41 @@ export default function VideoPlayer({
           {/* Botón Recargar */}
           <button
             onClick={handleReload}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-blue-950/60 hover:bg-slate-200 dark:hover:bg-blue-900/60 text-slate-700 dark:text-gray-200 hover:text-slate-950 dark:hover:text-white border border-slate-300 dark:border-blue-800/50 transition-all text-xs cursor-pointer active:scale-95 font-medium"
-            title="Recargar el reproductor si el video tarda en iniciar"
+            className="flex items-center justify-center p-1.5 rounded-lg bg-slate-100 dark:bg-blue-950/60 hover:bg-slate-200 dark:hover:bg-blue-900/60 text-slate-700 dark:text-gray-200 hover:text-slate-950 dark:hover:text-white border border-slate-300 dark:border-blue-800/50 transition-all cursor-pointer active:scale-95"
+            title="Recargar el reproductor"
           >
-            <RotateCw className={`w-3.5 h-3.5 text-purple-600 dark:text-blue-400 ${isLoading ? 'animate-spin' : ''}`} />
-            <span>Recargar</span>
-          </button>
-
-          {/* Botón Reportar caído */}
-          <button
-            onClick={() => {
-              setReported(true);
-              setTimeout(() => setReported(false), 3000);
-            }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-all text-xs cursor-pointer active:scale-95 font-medium ${
-              reported
-                ? 'bg-emerald-100 dark:bg-emerald-900/40 border-emerald-500 text-emerald-800 dark:text-emerald-300'
-                : 'bg-slate-100 dark:bg-black/40 border-slate-200 dark:border-gray-800 text-slate-600 dark:text-gray-400 hover:text-amber-600 dark:hover:text-amber-400 hover:border-amber-400'
-            }`}
-          >
-            <AlertTriangle className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
-            <span>{reported ? '¡Reporte recibido!' : 'Reportar caído'}</span>
+            <RotateCw className={`w-4 h-4 text-purple-600 dark:text-blue-400 ${isLoading ? 'animate-spin' : ''}`} />
           </button>
         </div>
+
+        {/* Volume Info Popover (Flotante) */}
+        {showVolumeInfo && (
+          <div className="absolute top-full right-0 mt-3 z-50 w-full sm:w-[320px] p-4 rounded-xl bg-white/95 dark:bg-[#0a1226]/95 backdrop-blur-xl border border-slate-200 dark:border-blue-900/50 shadow-2xl animate-in fade-in slide-in-from-top-2">
+            <div className="flex gap-3">
+              <Info className="w-5 h-5 text-purple-500 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+              <div className="space-y-2 text-xs">
+                <p className="font-bold text-slate-900 dark:text-white text-sm">
+                  ¿El volumen se escucha muy bajo?
+                </p>
+                <p className="text-slate-600 dark:text-gray-400 leading-relaxed">
+                  El audio proviene de servidores externos y en algunos títulos puede ser bajo. Sigue estos pasos:
+                </p>
+                <ul className="list-disc pl-4 text-slate-600 dark:text-gray-300 space-y-1.5">
+                  <li>Sube el volumen <strong>dentro del reproductor</strong> (ícono de bocina).</li>
+                  <li>Sube el volumen general de tu dispositivo al 100%.</li>
+                  <li>En celulares, revisa no estar en modo "No Molestar" o Bluetooth activo.</li>
+                  <li>Prueba seleccionando <strong>otro servidor</strong> de la lista abajo.</li>
+                </ul>
+              </div>
+            </div>
+            <button 
+              onClick={() => setShowVolumeInfo(false)}
+              className="mt-4 w-full py-2 rounded-lg bg-pastel-gradient text-slate-950 font-black hover:shadow-lg transition-all cursor-pointer active:scale-95 shadow-md shadow-pastel-blue/30"
+            >
+              Entendido
+            </button>
+          </div>
+        )}
       </div>
 
       {/* APARTADO EXPANDIDO DE SERVIDORES CON PESTAÑAS DEDICADAS (LATINO vs SUBTITULADO) */}
