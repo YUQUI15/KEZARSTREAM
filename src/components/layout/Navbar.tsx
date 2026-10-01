@@ -261,8 +261,12 @@ export default function Navbar() {
                 onChange={(e) => setQuery(e.target.value)}
                 onFocus={() => query.trim().length >= 2 && setShowDropdown(true)}
                 placeholder={placeholderText || "Buscar..."}
-                style={{ fontSize: '16px' }}
-                className={`w-full pl-10 pr-9 py-2.5 rounded-full outline-none transition-all shadow-xl font-medium bg-slate-100/95 dark:bg-[#061224]/95 backdrop-blur-md border border-slate-300 dark:border-blue-900/50 focus:border-pastel-cyan focus:ring-1 focus:ring-pastel-cyan placeholder-gray-500 dark:placeholder-gray-400 text-slate-900 dark:text-white`}
+                style={{
+                  fontSize: '16px',
+                  WebkitTextFillColor: 'inherit',
+                  caretColor: 'auto',
+                }}
+                className="w-full pl-10 pr-9 py-2.5 rounded-full outline-none transition-all shadow-xl font-medium bg-white dark:bg-[#061224] border border-slate-300 dark:border-blue-900/60 focus:border-pastel-cyan focus:ring-1 focus:ring-pastel-cyan placeholder-gray-400 dark:placeholder-gray-500 text-slate-900 dark:text-white"
               />
               <button
                 type="submit"
@@ -534,7 +538,11 @@ export default function Navbar() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Escribe el nombre de la película o serie..."
-                style={{ fontSize: '16px' }} /* Prevents iOS auto-zoom on focus */
+                style={{
+                  fontSize: '16px',
+                  WebkitTextFillColor: 'inherit',
+                  caretColor: 'auto',
+                }}
                 className={`
                   w-full rounded-2xl border outline-none transition-all
                   pl-11 py-3.5 font-medium

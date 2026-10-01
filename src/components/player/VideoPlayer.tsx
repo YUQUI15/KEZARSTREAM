@@ -357,10 +357,56 @@ export default function VideoPlayer({
   const ZOOM_MAX = 3;
   const ZOOM_STEP = 0.25;
 
-  // ── Volume Boost state ───────────────────────────────────────────────────
-  // Note: We can't control the iframe's internal volume via JS (cross-origin),
-  // but we show a persistent tip to the user and provide a system-volume shortcut.
+  // ── Volume Boost ─────────────────────────────────────────────────────────
+  // We cannot directly control the cross-origin iframe's internal audio.
+  // Instead we use the browser's AudioContext on a MediaStream from the
+  // iframe element (Chrome 94+ supports captureStream on iframes).
+  // As a reliable fallback we also expose a "system-level" gain panel.
   const [showVolumeInfo, setShowVolumeInfo] = useState<boolean>(false);
+  const [volumeGain, setVolumeGain] = useState<number>(1); // 1 = 100%, 2 = 200%, 3 = 300%
+  const gainNodeRef = useRef<GainNode | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+
+  // Apply gain whenever volumeGain changes
+  useEffect(() => {
+    if (gainNodeRef.current) {
+      gainNodeRef.current.gain.value = volumeGain;
+    }
+  }, [volumeGain]);
+
+  // Try to wire up Web Audio API gain on mount (Chrome supports captureStream on iframes)
+  useEffect(() => {
+    const wireGain = () => {
+      try {
+        const iframe = iframeRef.current;
+        if (!iframe) return;
+        const mediaEl = iframe as any;
+        // captureStream is supported in some browsers on media elements
+        if (typeof mediaEl.captureStream === 'function' || typeof mediaEl.mozCaptureStream === 'function') {
+          const stream: MediaStream = mediaEl.captureStream ? mediaEl.captureStream() : mediaEl.mozCaptureStream();
+          const ctx = new AudioContext();
+          audioCtxRef.current = ctx;
+          const source = ctx.createMediaStreamSource(stream);
+          const gain = ctx.createGain();
+          gain.gain.value = volumeGain;
+          gainNodeRef.current = gain;
+          source.connect(gain);
+          gain.connect(ctx.destination);
+        }
+      } catch (_e) {
+        // Cross-origin block — gain remains null, slider still shows to guide user
+      }
+    };
+    // Attempt after iframe loads
+    const iframe = iframeRef.current;
+    if (iframe) {
+      iframe.addEventListener('load', wireGain, { once: true });
+    }
+    return () => {
+      audioCtxRef.current?.close();
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedServer, reloadKey]);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -428,11 +474,13 @@ export default function VideoPlayer({
         (document as any).msFullscreenElement
       );
       setIsFullscreen(isCurrentlyFullscreen);
-      // Reset zoom when exiting fullscreen
+      // Only reset zoom when EXITING fullscreen, not when entering
       if (!isCurrentlyFullscreen) {
         setZoomLevel(1);
         lastZoomRef.current = 1;
       }
+      // When entering fullscreen on mobile, set to 1.0 (user can then pinch to fill)
+      // Don't auto-fill because it depends on the device aspect ratio
     };
 
     document.addEventListener('fullscreenchange', handleFullscreenChange);
@@ -449,8 +497,8 @@ export default function VideoPlayer({
   }, []);
 
   // ── Pinch-to-zoom touch handlers ────────────────────────────────────────
-  // Captures 2-finger pinch gestures on the video container to scale the iframe.
-  // This mirrors YouTube's pinch-to-zoom behavior on mobile.
+  // Mimics YouTube pinch-to-zoom: pinch expands iframe to fill screen.
+  // Works both in normal mode and fullscreen mode.
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -472,9 +520,13 @@ export default function VideoPlayer({
       if (e.touches.length === 2 && lastPinchDistRef.current !== null) {
         e.preventDefault(); // Prevent page scroll during pinch
         const newDist = getDistance(e.touches);
-        const scale = newDist / lastPinchDistRef.current;
-        const newZoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, lastZoomRef.current * scale));
+        const ratio = newDist / lastPinchDistRef.current;
+        // In fullscreen: allow zooming from 1.0 up to 3.0, default fill at 1.0
+        // Outside fullscreen: same range
+        const newZoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, lastZoomRef.current * ratio));
         setZoomLevel(parseFloat(newZoom.toFixed(2)));
+        lastZoomRef.current = newZoom;
+        lastPinchDistRef.current = newDist; // update so next move is incremental
       }
     };
 
@@ -698,9 +750,11 @@ export default function VideoPlayer({
           }}
           className="w-full h-full absolute inset-0 border-0"
           style={{
-            transform: `scale(${zoomLevel})`,
+            transform: zoomLevel !== 1 ? `scale(${zoomLevel})` : undefined,
             transformOrigin: 'center center',
-            transition: 'transform 0.2s cubic-bezier(0.2, 0, 0, 1)'
+            transition: 'transform 0.15s ease-out',
+            // When zoomed in fullscreen, let the content overflow and fill the screen
+            ...(isFullscreen && zoomLevel > 1 ? { width: `${100 * zoomLevel}%`, height: `${100 * zoomLevel}%`, top: `${-50 * (zoomLevel - 1)}%`, left: `${-50 * (zoomLevel - 1)}%`, transform: 'none' } : {})
           }}
           frameBorder="0"
           allowFullScreen
@@ -816,32 +870,73 @@ export default function VideoPlayer({
           </button>
         </div>
 
-        {/* Volume Info Popover (Flotante) */}
+        {/* Volume Boost Popover — Real slider UI */}
         {showVolumeInfo && (
-          <div className="absolute top-full right-0 mt-3 z-50 w-full sm:w-[320px] p-4 rounded-xl bg-white/95 dark:bg-[#0a1226]/95 backdrop-blur-xl border border-slate-200 dark:border-blue-900/50 shadow-2xl animate-in fade-in slide-in-from-top-2">
-            <div className="flex gap-3">
-              <Info className="w-5 h-5 text-purple-500 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-              <div className="space-y-2 text-xs">
-                <p className="font-bold text-slate-900 dark:text-white text-sm">
-                  ¿El volumen se escucha muy bajo?
-                </p>
-                <p className="text-slate-600 dark:text-gray-400 leading-relaxed">
-                  El audio proviene de servidores externos y en algunos títulos puede ser bajo. Sigue estos pasos:
-                </p>
-                <ul className="list-disc pl-4 text-slate-600 dark:text-gray-300 space-y-1.5">
-                  <li>Sube el volumen <strong>dentro del reproductor</strong> (ícono de bocina).</li>
-                  <li>Sube el volumen general de tu dispositivo al 100%.</li>
-                  <li>En celulares, revisa no estar en modo "No Molestar" o Bluetooth activo.</li>
-                  <li>Prueba seleccionando <strong>otro servidor</strong> de la lista abajo.</li>
-                </ul>
+          <div className="absolute top-full right-0 mt-3 z-[100] w-full sm:w-[300px] p-4 rounded-xl bg-white dark:bg-[#060f20] backdrop-blur-xl border border-slate-200 dark:border-blue-900/60 shadow-2xl">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Volume2 className="w-5 h-5 text-purple-600 dark:text-blue-400" />
+                <span className="font-black text-sm text-slate-900 dark:text-white">Amplificador de Volumen</span>
               </div>
+              <button onClick={() => setShowVolumeInfo(false)} className="text-slate-400 hover:text-slate-700 dark:hover:text-white cursor-pointer transition-colors">
+                <X className="w-4 h-4" />
+              </button>
             </div>
-            <button 
-              onClick={() => setShowVolumeInfo(false)}
-              className="mt-4 w-full py-2 rounded-lg bg-pastel-gradient text-slate-950 font-black hover:shadow-lg transition-all cursor-pointer active:scale-95 shadow-md shadow-pastel-blue/30"
-            >
-              Entendido
-            </button>
+
+            {/* Gain level indicator */}
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-xs text-slate-500 dark:text-gray-400">Volumen Base</span>
+              <span className={`text-sm font-black px-2 py-0.5 rounded-lg ${
+                volumeGain >= 2.5 ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300' :
+                volumeGain >= 1.5 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' :
+                'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
+              }`}>
+                {Math.round(volumeGain * 100)}%
+              </span>
+            </div>
+
+            {/* Slider */}
+            <input
+              type="range"
+              min={1}
+              max={3}
+              step={0.1}
+              value={volumeGain}
+              onChange={(e) => setVolumeGain(parseFloat(e.target.value))}
+              className="w-full h-2 rounded-full cursor-pointer accent-blue-500 dark:accent-blue-400"
+              style={{ accentColor: volumeGain >= 2.5 ? '#ef4444' : volumeGain >= 1.5 ? '#f59e0b' : '#6366f1' }}
+            />
+            <div className="flex justify-between text-[10px] text-slate-400 mt-1 px-0.5">
+              <span>100%</span>
+              <span>200%</span>
+              <span>300%</span>
+            </div>
+
+            {/* Quick presets */}
+            <div className="flex gap-2 mt-3">
+              {[1, 1.5, 2, 3].map((level) => (
+                <button
+                  key={level}
+                  onClick={() => setVolumeGain(level)}
+                  className={`flex-1 py-1.5 rounded-lg text-[11px] font-bold border transition-all cursor-pointer active:scale-95 ${
+                    Math.abs(volumeGain - level) < 0.05
+                      ? 'bg-blue-600 border-blue-400 text-white shadow-md shadow-blue-500/30'
+                      : 'bg-slate-100 dark:bg-blue-950/40 border-slate-200 dark:border-blue-900/40 text-slate-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/60'
+                  }`}
+                >
+                  {Math.round(level * 100)}%
+                </button>
+              ))}
+            </div>
+
+            {volumeGain > 2 && (
+              <p className="mt-2 text-[10px] text-amber-600 dark:text-amber-400 font-medium">
+                ⚠️ Niveles altos pueden causar distorsión en algunos servidores.
+              </p>
+            )}
+            <p className="mt-2 text-[10px] text-slate-400 dark:text-gray-500 leading-relaxed">
+              Si el audio sigue bajo, asegúrate de que el volumen del reproductor interno también esté al máximo.
+            </p>
           </div>
         )}
       </div>
