@@ -90,18 +90,27 @@ input[type="text"] {
   -webkit-text-fill-color: inherit; /* prevent iOS from overriding text color */
 }
 
-/* iOS sometimes renders input text as transparent — explicitly set it */
+/* iOS sometimes renders input text as transparent — explicitly set it.
+   Use high specificity to override .text-pastel-gradient leakage */
+html.dark input[type="search"],
+html.dark input[type="text"],
+html.dark input[type="search"]:focus,
+html.dark input[type="text"]:focus,
 .dark input[type="search"],
 .dark input[type="text"] {
-  -webkit-text-fill-color: #ffffff;
-  color: #ffffff;
+  -webkit-text-fill-color: #ffffff !important;
+  color: #ffffff !important;
 }
 
 /* Light mode */
+html:not(.dark) input[type="search"],
+html:not(.dark) input[type="text"],
+html:not(.dark) input[type="search"]:focus,
+html:not(.dark) input[type="text"]:focus,
 :not(.dark) input[type="search"],
 :not(.dark) input[type="text"] {
-  -webkit-text-fill-color: #0f172a;
-  color: #0f172a;
+  -webkit-text-fill-color: #0f172a !important;
+  color: #0f172a !important;
 }
 
 /* ── CATEGORY GRID HOVER ───────────────────────────────────────────────────
