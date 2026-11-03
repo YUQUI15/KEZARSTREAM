@@ -131,9 +131,10 @@ export async function getMovieDetails(id: string): Promise<DetailedMovie | null>
   try {
     const data = await fetchTMDB<DetailedMovie>({
       endpoint: `/movie/${id}`,
-      params: { append_to_response: 'credits,videos,similar' },
+      params: { append_to_response: 'credits,videos,similar,external_ids' },
     });
     if (!data || !data.id) return null;
+    data.imdb_id = data.imdb_id || data.external_ids?.imdb_id || '';
 
     if (!data.overview || data.overview.trim().length === 0) {
       // Fallback 1: Español España (es-ES)
@@ -165,9 +166,10 @@ export async function getTVDetails(id: string): Promise<DetailedTVShow | null> {
   try {
     const data = await fetchTMDB<DetailedTVShow>({
       endpoint: `/tv/${id}`,
-      params: { append_to_response: 'credits,videos,similar' },
+      params: { append_to_response: 'credits,videos,similar,external_ids' },
     });
     if (!data || !data.id) return null;
+    data.imdb_id = data.imdb_id || data.external_ids?.imdb_id || '';
 
     if (!data.overview || data.overview.trim().length === 0) {
       // Fallback 1: Español España (es-ES)

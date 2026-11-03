@@ -49,6 +49,8 @@ export interface CastMember {
 }
 
 export interface DetailedMovie extends Movie {
+  imdb_id?: string;
+  external_ids?: { imdb_id?: string };
   runtime: number;
   genres: { id: number; name: string }[];
   videos: { results: Video[] };
@@ -57,6 +59,8 @@ export interface DetailedMovie extends Movie {
 }
 
 export interface DetailedTVShow extends TVShow {
+  imdb_id?: string;
+  external_ids?: { imdb_id?: string };
   number_of_seasons: number;
   number_of_episodes: number;
   genres: { id: number; name: string }[];

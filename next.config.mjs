@@ -28,59 +28,20 @@ const nextConfig = {
         source: '/(.*)',
         headers: [
           // ===== CONTENT SECURITY POLICY =====
-          // Allow iframes from ALL streaming providers (latino + subtitulado)
+          // Allow iframes, redirects, media streams, and CDN workers from ALL streaming providers
           {
             key: 'Content-Security-Policy',
             value: [
-              // Scripts: self + inline (needed for Next.js)
-              "default-src 'self'",
-              // Styles: self + inline (Tailwind generates inline styles)
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              // Fonts: Google Fonts
-              "font-src 'self' https://fonts.gstatic.com",
-              // Scripts: self + inline + eval (needed for some video players)
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com",
-              // Images: allow TMDB, BunnyCDN, any https source (for player thumbnails)
-              "img-src 'self' data: blob: https:",
-              // Media: allow streams from any source
-              "media-src 'self' blob: https:",
-              // Connect: allow API connections
-              "connect-src 'self' https: wss:",
-              // ============================================================
-              // FRAME-SRC: ALL streaming server domains MUST be listed here
-              // ============================================================
-              [
-                "frame-src",
-                // Latino servers
-                "https://play.modocine.com",
-                "https://nsrplay.space",
-                "https://unlimplay.com",
-                "https://multiembed-clean.wptheme.site",
-                "https://embed69.org",
-                // Subtitulado servers
-                "https://vidlink.pro",
-                "https://autoembed.co",
-                "https://vidsrc.pm",
-                "https://vidsrc.in",
-                "https://player.videasy.net",
-                "https://www.2embed.cc",
-                "https://multiembed.mov",
-                "https://embed.smashystream.com",
-                "https://vidsrc.net",
-                "https://vidsrc.xyz",
-                "https://vidsrc.to",
-                // YouTube (for trailers)
-                "https://www.youtube.com",
-                "https://youtube.com",
-                "https://*.youtube.com",
-                // Wildcard fallback for any CDN subdomains used by the players
-                "https://*.modocine.com",
-                "https://*.nsrplay.space",
-                "https://*.2embed.cc",
-                "https://*.vidsrc.xyz",
-              ].join(' '),
-              // Worker: allow service workers from players
-              "worker-src 'self' blob:",
+              "default-src 'self' https: http: data: blob:",
+              "style-src 'self' 'unsafe-inline' https:",
+              "font-src 'self' data: https:",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https: http: blob:",
+              "img-src 'self' data: blob: https: http: *",
+              "media-src 'self' data: blob: https: http: *",
+              "connect-src 'self' https: http: wss: ws: *",
+              "frame-src 'self' https: http: data: blob: *",
+              "child-src 'self' https: http: data: blob: *",
+              "worker-src 'self' blob: https: *",
             ].join('; '),
           },
           // ===== PERMISSIONS POLICY =====
