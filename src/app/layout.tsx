@@ -1,20 +1,39 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Lexend_Deca } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import ProtectionWrapper from '@/components/security/ProtectionWrapper';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
+import PWAInstall from '@/components/pwa/PWAInstall';
 
 const lexend = Lexend_Deca({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'KEZARSTREAM - Películas y Series Gratis en Full HD',
   description: 'Mira las mejores películas y series completas en Español Latino y Subtitulado en KEZARSTREAM.',
-  icons: {
-    icon: '/logo-icon.png',
-    apple: '/logo-icon.png',
+  applicationName: 'KEZARSTREAM',
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    title: 'KEZARSTREAM',
+    statusBarStyle: 'black-translucent',
   },
+  formatDetection: { telephone: false },
+  icons: {
+    icon: [
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#000814',
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({
@@ -50,6 +69,7 @@ export default function RootLayout({
               {children}
             </main>
             <Footer />
+            <PWAInstall />
           </ProtectionWrapper>
         </ThemeProvider>
       </body>
