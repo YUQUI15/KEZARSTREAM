@@ -6,6 +6,7 @@ import Footer from '@/components/layout/Footer';
 import ProtectionWrapper from '@/components/security/ProtectionWrapper';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import PWAInstall from '@/components/pwa/PWAInstall';
+import ZaphyrelBadge from '@/components/brand/ZaphyrelBadge';
 
 const lexend = Lexend_Deca({ subsets: ['latin'] });
 
@@ -70,6 +71,7 @@ export default function RootLayout({
             </main>
             <Footer />
             <PWAInstall />
+            <ZaphyrelBadge />
           </ProtectionWrapper>
         </ThemeProvider>
       </body>
