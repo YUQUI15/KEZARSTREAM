@@ -2,7 +2,7 @@
  * Solo cachea recursos estáticos propios y ofrece una página sin conexión.
  * NO intercepta /api, reproductores (iframes) ni ningún dominio externo,
  * para no afectar la reproducción de video. */
-const VERSION = 'kezar-v1';
+const VERSION = 'kezar-v2';
 const STATIC_CACHE = `${VERSION}-static`;
 const OFFLINE_URL = '/offline.html';
 const PRECACHE = [OFFLINE_URL, '/icon-192.png', '/icon-512.png', '/placeholder-poster.png'];
